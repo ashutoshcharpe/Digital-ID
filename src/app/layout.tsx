@@ -38,6 +38,13 @@ export const metadata: Metadata = {
   description: "Official Digital Extension of the Student Council ID Card, AISSMS Institute of Information Technology.",
   keywords: ["Student Council", "AISSMS IOIT", "Ashutosh Charpe", "Digital Council ID", "Vintage Editorial"],
   authors: [{ name: "Student Council AISSMS IOIT" }],
+  icons: {
+    icon: [
+      { url: "/assets/council/student_council_logo.png" },
+      { url: "/icon.png" }
+    ],
+    apple: "/assets/council/student_council_logo.png"
+  },
   openGraph: {
     title: "Ashutosh Charpe — Joint Media Secretary | Student Council",
     description: "Official Digital Extension of the Student Council ID Card, AISSMS Institute of Information Technology.",
