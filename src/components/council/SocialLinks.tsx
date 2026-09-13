@@ -70,9 +70,9 @@ export default function SocialLinks({ member }: SocialLinksProps) {
 
   const handleSendMessage = () => {
     const text = encodeURIComponent(
-      `Official Student Council Inquiry for ${member.name} (${member.designation})\nSubject: ${contactSubject}\n\nMessage:\n${contactMsg || "Hello, I would like to connect regarding Student Council initiatives."}`
+      `Official Student Council Inquiry for ${member.name} (${member.designation})\nSubject: ${contactSubject}\n\nMessage:\n${contactMsg || "Hello Ashutosh, reaching out via the official Student Council Digital ID."}`
     );
-    window.open(`https://wa.me/?text=${text}`, "_blank");
+    window.open(`https://wa.me/917620443842?text=${text}`, "_blank");
     setIsContactModalOpen(false);
     setContactMsg("");
   };
@@ -139,8 +139,10 @@ export default function SocialLinks({ member }: SocialLinksProps) {
         </a>
 
         {/* WhatsApp / Contact */}
-        <button
-          onClick={() => setIsContactModalOpen(true)}
+        <a
+          href={member.socials.contact.actionUrl}
+          target="_blank"
+          rel="noopener noreferrer"
           className="group relative p-3 sm:p-4 rounded-xl bg-[#FAF4E6] border border-[#C8AF86] hover:border-[#641B18] transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98] text-left cursor-pointer"
         >
           <div className="flex items-start justify-between">
@@ -153,9 +155,9 @@ export default function SocialLinks({ member }: SocialLinksProps) {
             <ArrowUpRight className="w-4 h-4 text-[#75502F] group-hover:text-[#641B18] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-200 shrink-0" />
           </div>
           <div className="mt-2.5 pt-2 border-t border-[#641B18]/20 text-xs font-serif font-bold text-[#18110E] group-hover:text-[#641B18] transition-colors truncate text-left">
-            Send Official Note
+            {member.socials.contact.displayHandle}
           </div>
-        </button>
+        </a>
       </div>
 
       {/* Share / Save ID Card Dispatch Bar */}
