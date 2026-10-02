@@ -1,247 +1,609 @@
 "use client";
 
+import { useEffect, useRef, useState, useCallback } from "react";
 import Image from "next/image";
 import { CouncilMember } from "@/data/members";
-import CouncilBranding from "./CouncilBranding";
-import SocialLinks from "./SocialLinks";
-import CouncilFooter from "./CouncilFooter";
-import FluidBackground from "./FluidBackground";
-import BurnGlowCard from "./BurnGlowCard";
-import { 
-  Quote, 
-  Camera, 
-  Layers,
-  Sparkles,
-  Film,
-  Video,
-  Aperture,
-  Sliders
-} from "lucide-react";
 
 interface MemberProfileProps {
   member: CouncilMember;
 }
 
 export default function MemberProfile({ member }: MemberProfileProps) {
+  const WA_NUMBER = "917620443842";
+  const [takeCount, setTakeCount] = useState(1);
+  const [currentDateStr, setCurrentDateStr] = useState("2026.10.03");
+  const [timecodeStr, setTimecodeStr] = useState("00:00:00:00");
+  const [isPhotoSharp, setIsPhotoSharp] = useState(false);
+  const [isClapping, setIsClapping] = useState(false);
+  const [isClapperOpen, setIsClapperOpen] = useState(false);
+
+  const cardRef = useRef<HTMLDivElement>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+
+  // Audio Context helper
+  const getAudioContext = useCallback(() => {
+    if (!audioCtxRef.current && typeof window !== "undefined") {
+      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      if (AudioCtx) {
+        audioCtxRef.current = new AudioCtx();
+      }
+    }
+    if (audioCtxRef.current && audioCtxRef.current.state === "suspended") {
+      audioCtxRef.current.resume();
+    }
+    return audioCtxRef.current;
+  }, []);
+
+  // Clapperboard Sound
+  const playClapperSound = useCallback(() => {
+    try {
+      const ctx = getAudioContext();
+      if (!ctx) return;
+      const now = ctx.currentTime;
+
+      // 1. Noise burst
+      const bufferSize = Math.floor(ctx.sampleRate * 0.08);
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * 0.009));
+      }
+      const noise = ctx.createBufferSource();
+      noise.buffer = buffer;
+      const filter = ctx.createBiquadFilter();
+      filter.type = "bandpass";
+      filter.frequency.setValueAtTime(1750, now);
+      filter.Q.setValueAtTime(1.8, now);
+      const noiseGain = ctx.createGain();
+      noiseGain.gain.setValueAtTime(1.2, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
+      noise.connect(filter);
+      filter.connect(noiseGain);
+      noiseGain.connect(ctx.destination);
+      noise.start(now);
+
+      // 2. Body clack
+      const osc1 = ctx.createOscillator();
+      const oscGain1 = ctx.createGain();
+      osc1.type = "triangle";
+      osc1.frequency.setValueAtTime(460, now);
+      osc1.frequency.exponentialRampToValueAtTime(95, now + 0.09);
+      oscGain1.gain.setValueAtTime(1.0, now);
+      oscGain1.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+      osc1.connect(oscGain1);
+      oscGain1.connect(ctx.destination);
+      osc1.start(now);
+      osc1.stop(now + 0.09);
+
+      // 3. Rebound snap
+      const osc2 = ctx.createOscillator();
+      const oscGain2 = ctx.createGain();
+      osc2.type = "sine";
+      osc2.frequency.setValueAtTime(680, now + 0.025);
+      osc2.frequency.exponentialRampToValueAtTime(130, now + 0.085);
+      oscGain2.gain.setValueAtTime(0.5, now + 0.025);
+      oscGain2.gain.exponentialRampToValueAtTime(0.001, now + 0.085);
+      osc2.connect(oscGain2);
+      oscGain2.connect(ctx.destination);
+      osc2.start(now + 0.025);
+      osc2.stop(now + 0.085);
+    } catch (e) {
+      console.warn("AudioContext playback error:", e);
+    }
+  }, [getAudioContext]);
+
+  // DSLR Camera Shutter sound
+  const playCameraShutterSound = useCallback(() => {
+    try {
+      const ctx = getAudioContext();
+      if (!ctx) return;
+      const now = ctx.currentTime;
+
+      // Chirp
+      const focusOsc = ctx.createOscillator();
+      const focusGain = ctx.createGain();
+      focusOsc.type = "sine";
+      focusOsc.frequency.setValueAtTime(1450, now);
+      focusGain.gain.setValueAtTime(0.2, now);
+      focusGain.gain.exponentialRampToValueAtTime(0.001, now + 0.035);
+      focusOsc.connect(focusGain);
+      focusGain.connect(ctx.destination);
+      focusOsc.start(now);
+      focusOsc.stop(now + 0.035);
+
+      // Mechanical shutter curtains
+      [0.02, 0.075].forEach((delay) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "square";
+        osc.frequency.setValueAtTime(320, now + delay);
+        osc.frequency.exponentialRampToValueAtTime(60, now + delay + 0.045);
+        gain.gain.setValueAtTime(0.6, now + delay);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.045);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + delay);
+        osc.stop(now + delay + 0.045);
+      });
+    } catch (e) {
+      console.warn("AudioContext shutter sound error:", e);
+    }
+  }, [getAudioContext]);
+
+  // Date and Timecode
+  useEffect(() => {
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, "0");
+    const dd = String(now.getDate()).padStart(2, "0");
+    setCurrentDateStr(`${yyyy}.${mm}.${dd}`);
+
+    const startTime = performance.now();
+    const interval = setInterval(() => {
+      const elapsed = performance.now() - startTime;
+      const totalFrames = Math.floor((elapsed / 1000) * 24);
+      const frames = String(totalFrames % 24).padStart(2, "0");
+      const totalSeconds = Math.floor(elapsed / 1000);
+      const seconds = String(totalSeconds % 60).padStart(2, "0");
+      const totalMinutes = Math.floor(totalSeconds / 60);
+      const minutes = String(totalMinutes % 60).padStart(2, "0");
+      const hours = String(Math.floor(totalMinutes / 60)).padStart(2, "0");
+      setTimecodeStr(`${hours}:${minutes}:${seconds}:${frames}`);
+    }, 41.67);
+
+    // Initial autofocus animation
+    const timer = setTimeout(() => {
+      setIsPhotoSharp(true);
+    }, 450);
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timer);
+    };
+  }, []);
+
+  // 3D Parallax Tilt
+  useEffect(() => {
+    const card = cardRef.current;
+    if (!card) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      const rotateX = ((y - centerY) / centerY) * -9;
+      const rotateY = ((x - centerX) / centerX) * 9;
+
+      card.classList.remove("is-floating");
+      card.style.transform = `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) scale3d(1.015, 1.015, 1.015)`;
+    };
+
+    const handleMouseLeave = () => {
+      card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
+      setTimeout(() => {
+        card.classList.add("is-floating");
+      }, 300);
+    };
+
+    card.addEventListener("mousemove", handleMouseMove);
+    card.addEventListener("mouseleave", handleMouseLeave);
+
+    return () => {
+      card.removeEventListener("mousemove", handleMouseMove);
+      card.removeEventListener("mouseleave", handleMouseLeave);
+    };
+  }, []);
+
+  const handleClapperClick = () => {
+    setIsClapping(true);
+    playClapperSound();
+    setTakeCount((prev) => prev + 1);
+    setTimeout(() => {
+      setIsClapping(false);
+    }, 550);
+  };
+
+  const handlePhotoClick = () => {
+    playCameraShutterSound();
+    if (cardRef.current) {
+      cardRef.current.style.transform = "scale(0.99)";
+      setTimeout(() => {
+        if (cardRef.current) cardRef.current.style.transform = "";
+      }, 120);
+    }
+  };
+
+  const whatsappUrl = WA_NUMBER
+    ? `https://wa.me/${WA_NUMBER}?text=Hello%20Ashutosh,%20reaching%20out%20via%20the%20official%20Student%20Council%20Media%20Team%20Digital%20ID.`
+    : "#";
+
   return (
-    <main className="relative min-h-screen w-full bg-[#050B14] text-[#F0F9FF] selection:bg-[#00F0FF] selection:text-[#040810] overflow-x-hidden">
-      
-      {/* ========================================================================= */}
-      {/* INTERACTIVE FLUID BACKGROUND WITH HOLLOW / FLUID-FILLED MEDIA TEAM TEXT */}
-      {/* ========================================================================= */}
-      <FluidBackground />
-
-      {/* Top Media Team Publication Header */}
-      <CouncilBranding tenure={member.tenure} badgeCode={member.badgeCode} />
-
-      {/* Main Editorial Publication Spread */}
-      <div className="relative z-10 w-full max-w-4xl px-3.5 sm:px-6 md:px-8 py-6 sm:py-10 md:py-14 mx-auto space-y-8 sm:space-y-12 md:space-y-16">
+    <div className="page-wrapper">
+      <main className="main-layout" id="main-content">
         
-        {/* ========================================================================= */}
-        {/* SECTION 1: HERO / CINEMATIC MEDIA TEAM DIGITAL ID CARD */}
-        {/* ========================================================================= */}
-        <BurnGlowCard className="p-4 sm:p-7 md:p-10 shadow-2xl border border-cyan-500/30">
-          
-          {/* Top Camera Viewfinder Header Row */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 sm:gap-3 border-b border-cyan-500/20 pb-3.5 mb-5 sm:mb-6 text-center sm:text-left">
-            <div className="text-[9px] sm:text-[10px] font-mono-tech text-cyan-400/90 font-semibold select-none flex items-center gap-1.5">
-              <span className="text-cyan-400">❖</span>
-              <span>STUDENT COUNCIL // MEDIA TEAM</span>
-            </div>
-
-            {/* Glowing Cyan Media Team Badge */}
-            <div className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full cyan-neon-badge text-cyan-200 shadow-md text-[9px] sm:text-[10px] md:text-[11px] font-mono-tech font-bold tracking-wider uppercase">
-              <div className="w-2 h-2 rounded-full rec-pulse-dot shrink-0" />
-              <span>OFFICIAL MEDIA TEAM CREDENTIAL</span>
-            </div>
-
-            <div className="text-[9px] sm:text-[10px] font-mono-tech text-cyan-400/90 font-semibold select-none flex items-center gap-1.5">
-              <span>AISSMS IOIT • {member.tenure}</span>
-              <span className="text-cyan-400">❖</span>
-            </div>
-          </div>
-
-          {/* Spread Grid: Left Viewfinder Portrait / Right Info */}
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 sm:gap-8 md:gap-10 items-center">
+        {/* ========================================================= */}
+        {/* LEFT COLUMN: 3D DIGITAL ID CARD                           */}
+        {/* ========================================================= */}
+        <section className="id-card-perspective-container" aria-label="Digital ID Card">
+          <article className="id-card is-floating" id="idCard" ref={cardRef}>
             
-            {/* LEFT COLUMN: Cinematic Camera Viewfinder Portrait Mount */}
-            <div className="md:col-span-5 flex flex-col items-center justify-center">
-              <div className="relative group w-full max-w-[210px] sm:max-w-[240px] md:max-w-[260px] mx-auto">
-                
-                {/* Viewfinder Photo Mount Frame */}
-                <div className="media-photo-viewfinder relative">
-                  
-                  {/* Four Electric Cyan Viewfinder Corner Brackets */}
-                  <div className="viewfinder-corner-tl" />
-                  <div className="viewfinder-corner-tr" />
-                  <div className="viewfinder-corner-bl" />
-                  <div className="viewfinder-corner-br" />
+            {/* Card Header */}
+            <header className="card-header layer-depth-1">
+              <div className="header-brand">
+                <div className="logo-wrapper">
+                  <Image 
+                    src="/assets/logo.png" 
+                    alt="Student Council Logo" 
+                    width={36} 
+                    height={36} 
+                    className="brand-logo"
+                  />
+                </div>
+                <div className="brand-text">
+                  <span className="brand-title">Student Council Media Team</span>
+                  <span className="brand-tenure">{member.tenure} • AISSMS IOIT</span>
+                </div>
+              </div>
 
-                  {/* Inner Dark Teal Photo Container */}
-                  <div className="p-1 rounded-lg bg-[#071526] border border-cyan-500/30">
-                    <div className="relative w-full aspect-[4/5] overflow-hidden rounded-md bg-[#040A14]">
-                      
-                      {/* Member Portrait */}
-                      <Image
-                        src={member.photo}
-                        alt={`${member.name} - ${member.designation}`}
-                        fill
-                        sizes="(max-width: 640px) 210px, (max-width: 768px) 240px, 260px"
-                        priority
-                        className="object-cover object-top cinematic-media-photo"
-                      />
+              {/* Blinking Red REC Indicator */}
+              <div className="rec-indicator" title="Live Recording Status" aria-label="Recording status: Live">
+                <span className="rec-dot" aria-hidden="true"></span>
+                <span className="rec-text">REC</span>
+              </div>
+            </header>
 
-                      {/* Subtle Camera Focus Grid Overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#050B14]/80 via-transparent to-cyan-500/10 pointer-events-none" />
-                    </div>
-                  </div>
+            {/* DSLR Viewfinder Frame */}
+            <div className="viewfinder-wrapper layer-depth-2">
+              <div 
+                className="viewfinder-frame" 
+                id="viewfinder"
+                onClick={handlePhotoClick}
+                title="Click to trigger camera focus shutter"
+              >
+                {/* Viewfinder 4 Corner Brackets */}
+                <span className="corner-bracket bracket-tl" aria-hidden="true"></span>
+                <span className="corner-bracket bracket-tr" aria-hidden="true"></span>
+                <span className="corner-bracket bracket-bl" aria-hidden="true"></span>
+                <span className="corner-bracket bracket-br" aria-hidden="true"></span>
 
-                  {/* Camera Metadata Telemetry Stamp */}
-                  <div className="mt-2.5 pt-2 border-t border-dashed border-cyan-500/30 flex items-center justify-between text-[8px] sm:text-[9px] font-mono-tech tracking-wider text-cyan-400 font-bold uppercase">
-                    <span>4K 60FPS</span>
-                    <span className="text-slate-400 lowercase font-sans">media pass</span>
-                    <span>ISO 400</span>
-                  </div>
+                {/* Rule-of-Thirds Grid Overlay */}
+                <div className="grid-overlay" aria-hidden="true">
+                  <span className="grid-line grid-v-1"></span>
+                  <span className="grid-line grid-v-2"></span>
+                  <span className="grid-line grid-h-1"></span>
+                  <span className="grid-line grid-h-2"></span>
                 </div>
 
-                {/* Cyber Cyan Seal Badge floating at bottom corner */}
-                <div className="absolute -bottom-2.5 -right-2 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-lg cyan-neon-badge text-cyan-200 shadow-lg text-[10px] sm:text-xs font-mono-tech tracking-wider uppercase font-bold flex items-center gap-1.5">
-                  <Aperture className="w-3.5 h-3.5 text-cyan-400 animate-spin-slow" />
-                  <span>MEDIA PASS</span>
+                {/* Top Viewfinder HUD Telemetry */}
+                <div className="viewfinder-hud top-hud">
+                  <span className="hud-item af-status is-locked" id="afStatus">AF-C [LOCKED]</span>
+                  <span className="hud-item">ISO 400</span>
+                  <span className="hud-item">1/250s • f/2.8</span>
+                </div>
+
+                {/* Member Portrait */}
+                <div className="photo-container">
+                  <Image 
+                    src="/assets/photo.jpg" 
+                    alt={`${member.name} — ${member.designation}`} 
+                    width={400} 
+                    height={500} 
+                    priority
+                    className={`portrait-photo ${isPhotoSharp ? "is-sharp" : "blurred-init"}`}
+                  />
+                </div>
+
+                {/* Bottom Viewfinder HUD Telemetry */}
+                <div className="viewfinder-hud bottom-hud">
+                  <span className="hud-item" id="hudDate">{currentDateStr}</span>
+                  <span className="hud-item hud-badge">4K • 24FPS</span>
+                  <span className="hud-item hud-timecode" id="hudTimecode">{timecodeStr}</span>
                 </div>
               </div>
             </div>
 
-            {/* RIGHT COLUMN: Cinematic Headline, Designation & Metadata */}
-            <div className="md:col-span-7 space-y-4 sm:space-y-5 text-center md:text-left">
-              
-              {/* Header Label */}
-              <div className="space-y-1">
-                <div className="flex items-center justify-center md:justify-start gap-2">
-                  <span className="h-0.5 w-5 sm:w-7 bg-gradient-to-r from-cyan-400 to-teal-400" />
-                  <span className="font-mono-tech text-[10px] sm:text-[11px] font-bold tracking-[0.2em] text-cyan-400 uppercase">
-                    STUDENT COUNCIL • MEDIA TEAM 2026
-                  </span>
-                </div>
-                <div className="text-xs font-mono-tech text-cyan-300/80 tracking-wider uppercase flex items-center justify-center md:justify-start gap-1.5">
-                  <Video className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>CREATIVE MEDIA &amp; VISUAL DIRECTION</span>
-                </div>
+            {/* Member Identity Details */}
+            <footer className="card-footer layer-depth-3">
+              <div className="member-identity">
+                <h1 className="member-name">{member.name}</h1>
+                <p className="member-role">{member.designation}</p>
+                <p className="member-institution">{member.college}</p>
               </div>
+            </footer>
 
-              {/* Large Member Name */}
-              <div className="space-y-1.5">
-                <h1 className="font-editorial-title text-2xl sm:text-4xl md:text-5xl font-black text-white tracking-tight leading-[1.08] uppercase drop-shadow-md">
-                  {member.name}
-                </h1>
-                <div className="inline-block px-3 py-1 rounded-md bg-gradient-to-r from-cyan-500/20 to-teal-500/20 border border-cyan-400/40 text-xs sm:text-sm font-mono-tech font-bold tracking-[0.16em] text-cyan-300 uppercase">
-                  {member.designation}
-                </div>
-              </div>
+          </article>
+        </section>
 
-              {/* Short Editorial Intro */}
-              <p className="text-xs sm:text-sm font-sans text-slate-300 leading-relaxed border-l-0 md:border-l-2 border-cyan-400 md:pl-3 p-2.5 md:p-2 bg-[#0B1D33]/70 rounded-lg border border-cyan-500/20 shadow-xs">
-                {member.introNote || "Leading visual communications, campus storytelling and official media broadcasts."}
-              </p>
-
-              {/* Media Metadata Grid */}
-              <div className="grid grid-cols-2 gap-2 sm:gap-3 pt-2 sm:pt-3 border-t border-cyan-500/20 text-xs">
-                <div className="p-2 sm:p-2.5 md:p-3 rounded-xl bg-[#09182B]/90 border border-cyan-500/30 shadow-xs text-left">
-                  <div className="text-[9px] sm:text-[10px] font-mono-tech font-bold tracking-widest text-cyan-400 uppercase flex items-center gap-1">
-                    <Camera className="w-3 h-3 text-cyan-400" />
-                    COUNCIL ROLE
-                  </div>
-                  <div className="font-sans font-bold text-white text-xs sm:text-sm mt-0.5 truncate">
-                    {member.designation}
-                  </div>
-                </div>
-
-                <div className="p-2 sm:p-2.5 md:p-3 rounded-xl bg-[#09182B]/90 border border-cyan-500/30 shadow-xs text-left">
-                  <div className="text-[9px] sm:text-[10px] font-mono-tech font-bold tracking-widest text-cyan-400 uppercase flex items-center gap-1">
-                    <Film className="w-3 h-3 text-cyan-400" />
-                    DOMAIN
-                  </div>
-                  <div className="font-sans font-bold text-white text-xs sm:text-sm mt-0.5 truncate">
-                    {member.roleDescription.domain}
-                  </div>
-                </div>
-
-                <div className="p-2 sm:p-2.5 md:p-3 rounded-xl bg-[#09182B]/90 border border-cyan-500/30 shadow-xs text-left">
-                  <div className="text-[9px] sm:text-[10px] font-mono-tech font-bold tracking-widest text-cyan-400 uppercase flex items-center gap-1">
-                    <Sliders className="w-3 h-3 text-cyan-400" />
-                    DEPARTMENT
-                  </div>
-                  <div className="font-sans font-bold text-white text-xs sm:text-sm mt-0.5 truncate">
-                    {member.department}
-                  </div>
-                </div>
-
-                <div className="p-2 sm:p-2.5 md:p-3 rounded-xl bg-[#09182B]/90 border border-cyan-500/30 shadow-xs text-left">
-                  <div className="text-[9px] sm:text-[10px] font-mono-tech font-bold tracking-widest text-cyan-400 uppercase flex items-center gap-1">
-                    <Sparkles className="w-3 h-3 text-cyan-400" />
-                    INSTITUTION
-                  </div>
-                  <div className="font-sans font-bold text-white text-xs sm:text-sm mt-0.5 truncate">
-                    {member.college.split(" ")[0]} IOIT
-                  </div>
-                </div>
-              </div>
-
-              {/* Responsibility Areas */}
-              <div className="pt-1 sm:pt-2">
-                <div className="text-[9px] sm:text-[10px] font-mono-tech font-bold tracking-widest text-cyan-400 uppercase mb-2 flex items-center justify-center md:justify-start gap-1.5">
-                  <Layers className="w-3.5 h-3.5 text-cyan-400" />
-                  RESPONSIBILITY AREAS
-                </div>
-                <div className="flex flex-wrap gap-1.5 sm:gap-2 justify-center md:justify-start text-xs font-sans text-slate-200">
-                  {member.roleDescription.focusAreas.map((area, idx) => (
-                    <span key={idx} className="px-2.5 py-1 rounded-lg bg-[#0B1F38] border border-cyan-500/30 flex items-center gap-1.5 shadow-xs text-[11px] sm:text-xs hover:border-cyan-400 transition-colors">
-                      <span className="text-cyan-400 font-bold text-[9px]">❖</span>
-                      <span>{area}</span>
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-            </div>
-
-          </div>
-        </BurnGlowCard>
-
-        {/* ========================================================================= */}
-        {/* SECTION 2: PERSONAL MESSAGE — CINEMATIC CLAPPERBOARD QUOTE CARD */}
-        {/* ========================================================================= */}
-        <BurnGlowCard className="p-4 sm:p-7 md:p-10 shadow-xl border border-cyan-500/30">
+        {/* ========================================================= */}
+        {/* RIGHT COLUMN: SLATE, QUOTE, AND CONNECT TILES             */}
+        {/* ========================================================= */}
+        <section className="side-content-layout" aria-label="Details and Connections">
           
-          <div className="flex items-center justify-center sm:justify-start gap-2 mb-3 sm:mb-4">
-            <Film className="w-4 h-4 text-cyan-400" />
-            <span className="font-mono-tech text-[10px] sm:text-[11px] font-bold tracking-[0.2em] text-cyan-400 uppercase">
-              DIRECTOR&apos;S NOTE // VISION &amp; MESSAGE
-            </span>
+          {/* Film Clapperboard Slate */}
+          <div 
+            className="clapperboard-card" 
+            id="clapperboard"
+            onClick={handleClapperClick}
+            onPointerDown={() => setIsClapperOpen(true)}
+            onPointerUp={() => setIsClapperOpen(false)}
+            onPointerLeave={() => setIsClapperOpen(false)}
+            title="Click to clap board"
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") handleClapperClick(); }}
+          >
+            <div className="clapper-top-hinge">
+              <div 
+                className={`clapper-stick ${isClapping ? "is-clapping" : isClapperOpen ? "is-open" : "is-shut"}`} 
+                id="clapperStick"
+              >
+                <span className="stripe s-1"></span>
+                <span className="stripe s-2"></span>
+                <span className="stripe s-3"></span>
+                <span className="stripe s-4"></span>
+                <span className="stripe s-5"></span>
+                <span className="stripe s-6"></span>
+                <span className="stripe s-7"></span>
+                <span className="stripe s-8"></span>
+              </div>
+              <div className="clapper-base-stick">
+                <span className="stripe s-1"></span>
+                <span className="stripe s-2"></span>
+                <span className="stripe s-3"></span>
+                <span className="stripe s-4"></span>
+                <span className="stripe s-5"></span>
+                <span className="stripe s-6"></span>
+                <span className="stripe s-7"></span>
+                <span className="stripe s-8"></span>
+              </div>
+            </div>
+
+            <div className="slate-body">
+              <div className="slate-row slate-header-row">
+                <span className="slate-label">PRODUCTION</span>
+                <span className="slate-value">STUDENT COUNCIL MEDIA TEAM</span>
+              </div>
+
+              <div className="slate-row slate-grid-row">
+                <div className="slate-cell">
+                  <span className="slate-label">SCENE</span>
+                  <span className="slate-value">MEDIA</span>
+                </div>
+                <div className="slate-cell">
+                  <span className="slate-label">TAKE</span>
+                  <span className="slate-value highlight-take" id="slateTake">{takeCount}</span>
+                </div>
+                <div className="slate-cell">
+                  <span className="slate-label">ROLL</span>
+                  <span className="slate-value">2026</span>
+                </div>
+              </div>
+
+              <div className="slate-row slate-meta-row">
+                <div className="slate-cell">
+                  <span className="slate-label">DIRECTOR</span>
+                  <span className="slate-value">ASHUTOSH CHARPE</span>
+                </div>
+                <div className="slate-cell">
+                  <span className="slate-label">DATE</span>
+                  <span className="slate-value" id="slateDate">{currentDateStr}</span>
+                </div>
+              </div>
+
+              <div className="slate-click-hint">
+                <span>⚡ Click to clap</span>
+              </div>
+            </div>
           </div>
 
-          <div className="relative pl-0 sm:pl-8 text-center sm:text-left">
-            <Quote className="hidden sm:block absolute top-0 left-0 w-5 h-5 text-cyan-400/40 rotate-180" />
-            <blockquote className="font-sans text-sm sm:text-lg md:text-xl text-slate-100 leading-relaxed font-normal">
+          {/* Personal Message Quote Card */}
+          <div className="message-quote-card">
+            <blockquote className="quote-text">
               &ldquo;{member.message}&rdquo;
             </blockquote>
+            <div className="quote-attribution">
+              <span className="attribution-line" aria-hidden="true"></span>
+              <span className="attribution-author">{member.name}</span>
+              <span className="attribution-role">{member.designation}</span>
+            </div>
           </div>
 
-          <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-cyan-500/20 flex flex-col sm:flex-row items-center justify-between text-xs font-mono-tech text-slate-400 gap-1.5 text-center sm:text-left">
-            <span className="font-bold text-cyan-300 text-sm sm:text-base">— {member.name}</span>
-            <span className="uppercase tracking-widest font-semibold text-[11px] sm:text-xs text-cyan-400/90">{member.designation}</span>
+          {/* Connect With Me Tile Grid */}
+          <div className="connect-block">
+            <h2 className="connect-heading">Connect Directly</h2>
+            <div className="connect-buttons-grid">
+              
+              {/* Instagram */}
+              <a 
+                href={member.socials.instagram.url} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="connect-btn btn-instagram"
+              >
+                <div className="btn-icon">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect>
+                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                    <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line>
+                  </svg>
+                </div>
+                <div className="btn-text">
+                  <span className="btn-label">Instagram</span>
+                  <span className="btn-handle">{member.socials.instagram.username}</span>
+                </div>
+                <span className="btn-arrow" aria-hidden="true">&rarr;</span>
+              </a>
+
+              {/* LinkedIn */}
+              <a 
+                href={member.socials.linkedin.url} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="connect-btn btn-linkedin"
+              >
+                <div className="btn-icon">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+                    <rect width="4" height="12" x="2" y="9"></rect>
+                    <circle cx="4" cy="4" r="2"></circle>
+                  </svg>
+                </div>
+                <div className="btn-text">
+                  <span className="btn-label">LinkedIn</span>
+                  <span className="btn-handle">ashutosh-charpe</span>
+                </div>
+                <span className="btn-arrow" aria-hidden="true">&rarr;</span>
+              </a>
+
+              {/* WhatsApp */}
+              <a 
+                href={whatsappUrl} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="connect-btn btn-whatsapp"
+              >
+                <div className="btn-icon">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                  </svg>
+                </div>
+                <div className="btn-text">
+                  <span className="btn-label">WhatsApp</span>
+                  <span className="btn-handle">+91 76204 43842</span>
+                </div>
+                <span className="btn-arrow" aria-hidden="true">&rarr;</span>
+              </a>
+
+            </div>
           </div>
-        </BurnGlowCard>
 
-        {/* ========================================================================= */}
-        {/* SECTION 3: SOCIAL / CONNECT — CINEMATIC MEDIA CHANNELS */}
-        {/* ========================================================================= */}
-        <SocialLinks member={member} />
+        </section>
 
-      </div>
+      </main>
 
-      {/* Institutional Media Team Footer */}
-      <CouncilFooter />
-    </main>
+      {/* ========================================================= */}
+      {/* BOTTOM SECTION: 35MM FILM STRIP GLIMPSES                  */}
+      {/* ========================================================= */}
+      <section className="film-strip-section" aria-label="Media Team Glimpses">
+        <div className="film-strip-band">
+          
+          <div className="film-reel-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="reel-svg">
+              <circle cx="12" cy="12" r="10"></circle>
+              <circle cx="12" cy="12" r="3"></circle>
+              <line x1="12" y1="2" x2="12" y2="9"></line>
+              <line x1="12" y1="15" x2="12" y2="22"></line>
+              <line x1="2" y1="12" x2="9" y2="12"></line>
+              <line x1="15" y1="12" x2="22" y2="12"></line>
+            </svg>
+          </div>
+
+          <div className="film-strip-scroller" aria-label="Glimpses of Media Team">
+            <div className="film-strip-track">
+              
+              {/* Loop Set 1 */}
+              <div className="film-photo-frame">
+                <div className="film-perforations top-perfs" aria-hidden="true"></div>
+                <div className="film-photo-inner">
+                  <Image src="/assets/glimpses/glimpse_1.jpg" alt="Media Team Campus Coverage" width={170} height={100} className="film-photo-img" />
+                  <span className="film-frame-number">01A • MEDIA TEAM</span>
+                </div>
+                <div className="film-perforations bottom-perfs" aria-hidden="true"></div>
+              </div>
+
+              <div className="film-photo-frame">
+                <div className="film-perforations top-perfs" aria-hidden="true"></div>
+                <div className="film-photo-inner">
+                  <Image src="/assets/glimpses/glimpse_2.jpg" alt="Media Team Secretariat & Coverage" width={170} height={100} className="film-photo-img" />
+                  <span className="film-frame-number">02A • MEDIA TEAM</span>
+                </div>
+                <div className="film-perforations bottom-perfs" aria-hidden="true"></div>
+              </div>
+
+              <div className="film-photo-frame">
+                <div className="film-perforations top-perfs" aria-hidden="true"></div>
+                <div className="film-photo-inner">
+                  <Image src="/assets/glimpses/glimpse_3.jpg" alt="Live Telecast Camera Operator" width={170} height={100} className="film-photo-img" />
+                  <span className="film-frame-number">03A • BROADCAST &amp; LIVE</span>
+                </div>
+                <div className="film-perforations bottom-perfs" aria-hidden="true"></div>
+              </div>
+
+              <div className="film-photo-frame">
+                <div className="film-perforations top-perfs" aria-hidden="true"></div>
+                <div className="film-photo-inner">
+                  <Image src="/assets/glimpses/glimpse_4.jpg" alt="Stage Production &amp; Event Crew" width={170} height={100} className="film-photo-img" />
+                  <span className="film-frame-number">04A • STAGE CREW</span>
+                </div>
+                <div className="film-perforations bottom-perfs" aria-hidden="true"></div>
+              </div>
+
+              {/* Loop Set 2 (Duplicate for Seamless Infinite Marquee) */}
+              <div className="film-photo-frame">
+                <div className="film-perforations top-perfs" aria-hidden="true"></div>
+                <div className="film-photo-inner">
+                  <Image src="/assets/glimpses/glimpse_1.jpg" alt="Media Team Campus Coverage" width={170} height={100} className="film-photo-img" />
+                  <span className="film-frame-number">01A • MEDIA TEAM</span>
+                </div>
+                <div className="film-perforations bottom-perfs" aria-hidden="true"></div>
+              </div>
+
+              <div className="film-photo-frame">
+                <div className="film-perforations top-perfs" aria-hidden="true"></div>
+                <div className="film-photo-inner">
+                  <Image src="/assets/glimpses/glimpse_2.jpg" alt="Media Team Secretariat & Coverage" width={170} height={100} className="film-photo-img" />
+                  <span className="film-frame-number">02A • MEDIA TEAM</span>
+                </div>
+                <div className="film-perforations bottom-perfs" aria-hidden="true"></div>
+              </div>
+
+              <div className="film-photo-frame">
+                <div className="film-perforations top-perfs" aria-hidden="true"></div>
+                <div className="film-photo-inner">
+                  <Image src="/assets/glimpses/glimpse_3.jpg" alt="Live Telecast Camera Operator" width={170} height={100} className="film-photo-img" />
+                  <span className="film-frame-number">03A • BROADCAST &amp; LIVE</span>
+                </div>
+                <div className="film-perforations bottom-perfs" aria-hidden="true"></div>
+              </div>
+
+              <div className="film-photo-frame">
+                <div className="film-perforations top-perfs" aria-hidden="true"></div>
+                <div className="film-photo-inner">
+                  <Image src="/assets/glimpses/glimpse_4.jpg" alt="Stage Production &amp; Event Crew" width={170} height={100} className="film-photo-img" />
+                  <span className="film-frame-number">04A • STAGE CREW</span>
+                </div>
+                <div className="film-perforations bottom-perfs" aria-hidden="true"></div>
+              </div>
+
+            </div>
+          </div>
+
+          <button 
+            className="dslr-camera-trigger" 
+            id="cameraTrigger" 
+            type="button" 
+            onClick={handlePhotoClick}
+            title="Click camera for shutter flash" 
+            aria-label="Trigger Camera Shutter Flash"
+          >
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="camera-svg">
+              <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path>
+              <circle cx="12" cy="13" r="3.5"></circle>
+            </svg>
+            <span className="camera-led" aria-hidden="true"></span>
+          </button>
+
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="page-footer">
+        <p className="footer-title">Student Council Media Team</p>
+        <p className="footer-sub">AISSMS Institute of Information Technology • 2026–27</p>
+      </footer>
+
+    </div>
   );
 }

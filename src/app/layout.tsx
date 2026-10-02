@@ -1,44 +1,45 @@
 import type { Metadata } from "next";
-import { Montserrat, Inter, Space_Grotesk } from "next/font/google";
+import { Instrument_Serif, JetBrains_Mono, Manrope } from "next/font/google";
 import "./globals.css";
 
-const montserrat = Montserrat({
+const instrumentSerif = Instrument_Serif({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800", "900"],
-  variable: "--font-montserrat",
+  weight: ["400"],
+  style: ["normal", "italic"],
+  variable: "--font-serif",
   display: "swap"
 });
 
-const inter = Inter({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  variable: "--font-inter",
-  display: "swap"
-});
-
-const spaceGrotesk = Space_Grotesk({
+const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
-  variable: "--font-space-grotesk",
+  variable: "--font-mono",
+  display: "swap"
+});
+
+const manrope = Manrope({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-sans",
   display: "swap"
 });
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://council.aissmsioit.org"),
-  title: "Ashutosh Charpe — Joint Media Secretary | Student Council Media Team 2026",
-  description: "Official Digital ID — AISSMS IOIT Student Council Media Team 2026. Photography, Cinematography, Media & Visual Communications.",
-  keywords: ["Student Council", "Media Team", "AISSMS IOIT", "Ashutosh Charpe", "Digital Council ID", "Photography", "Cinematography"],
+  title: "Ashutosh Charpe — Joint Media Secretary | Student Council Media Team",
+  description: "Ashutosh Charpe — Joint Media Secretary | Student Council Media Team 2026-27, AISSMS Institute of Information Technology.",
+  keywords: ["Student Council", "Media Team", "AISSMS IOIT", "Ashutosh Charpe", "Digital ID", "Photography", "Cinematography"],
   authors: [{ name: "AISSMS IOIT Student Council — Media Team" }],
   icons: {
     icon: [
-      { url: "/assets/council/student_council_logo.png" },
+      { url: "/assets/logo.png" },
       { url: "/icon.png" }
     ],
-    apple: "/assets/council/student_council_logo.png"
+    apple: "/assets/logo.png"
   },
   openGraph: {
-    title: "Ashutosh Charpe — Joint Media Secretary | Student Council Media Team 2026",
-    description: "Official Digital ID — AISSMS IOIT Student Council Media Team 2026.",
+    title: "Ashutosh Charpe — Joint Media Secretary | Student Council Media Team",
+    description: "Ashutosh Charpe — Joint Media Secretary | Student Council Media Team 2026-27, AISSMS Institute of Information Technology.",
     type: "website"
   }
 };
@@ -49,10 +50,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="scroll-smooth dark">
-      <body
-        className={`${montserrat.variable} ${inter.variable} ${spaceGrotesk.variable} antialiased selection:bg-[#00F0FF] selection:text-[#040810] bg-[#050B14] text-[#F0F9FF] min-h-screen relative overflow-x-hidden`}
-      >
+    <html lang="en" className={`${instrumentSerif.variable} ${jetbrainsMono.variable} ${manrope.variable}`}>
+      <body className="antialiased">
         {children}
       </body>
     </html>
