@@ -110,7 +110,6 @@ function initLiveTimecode() {
  */
 function initOrchestratedLoadSequence() {
   const portraitPhoto = document.getElementById("portraitPhoto");
-  const afBox = document.getElementById("afBox");
   const afStatus = document.getElementById("afStatus");
   const clapperStick = document.getElementById("clapperStick");
 
@@ -119,15 +118,13 @@ function initOrchestratedLoadSequence() {
 
   if (prefersReducedMotion) {
     if (portraitPhoto) portraitPhoto.classList.remove("blurred-init");
-    if (afBox) afBox.classList.add("is-locked");
     if (afStatus) afStatus.classList.add("is-locked");
     if (clapperStick) clapperStick.classList.add("is-shut");
     return;
   }
 
-  // T + 350ms: Autofocus lock
+  // T + 350ms: AF HUD status lock
   setTimeout(() => {
-    if (afBox) afBox.classList.add("is-locked");
     if (afStatus) afStatus.classList.add("is-locked");
   }, 400);
 

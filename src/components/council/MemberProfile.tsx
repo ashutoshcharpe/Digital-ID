@@ -93,13 +93,6 @@ export default function MemberProfile({ member }: MemberProfileProps) {
 
                       {/* Subtle Camera Focus Grid Overlay */}
                       <div className="absolute inset-0 bg-gradient-to-t from-[#050B14]/80 via-transparent to-cyan-500/10 pointer-events-none" />
-                      
-                      {/* Viewfinder Center Target Dot */}
-                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none opacity-40 group-hover:opacity-80 transition-opacity">
-                        <div className="w-full h-full border border-cyan-400/60 rounded-full flex items-center justify-center">
-                          <div className="w-1 h-1 bg-cyan-400 rounded-full" />
-                        </div>
-                      </div>
                     </div>
                   </div>
 
