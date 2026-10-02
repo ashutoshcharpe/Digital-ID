@@ -2,38 +2,34 @@
 
 @layer base {
   :root {
-    /* Vintage Scorched Council Color Palette */
-    --burgundy-deep: #3A100E;
-    --burgundy-primary: #641B18;
-    --burgundy-vivid: #7A221E;
-    --burgundy-light: #9B3B37;
-    
-    --charcoal-black: #120706;
-    --burnt-ember: #2D0F0B;
-    --burnt-crust: #431713;
-    --ember-orange: #FF6B2B;
-    --ember-gold: #F59E0B;
+    /* Media Team 2026 Palette: Deep Navy, Dark Teal, Electric Cyan */
+    --navy-abyss: #040810;
+    --navy-dark: #070F1E;
+    --navy-card: #0A1628;
+    --navy-surface: #0F223D;
+    --teal-dark: #072535;
+    --teal-muted: #0D3B4C;
 
-    --parchment-light: #FAF4E6;
-    --parchment-base: #F3EBD8;
-    --parchment-warm: #EADDC2;
-    --parchment-aged: #DFCBA7;
-    --parchment-border: #C8AF86;
+    --cyan-neon: #00F0FF;
+    --cyan-bright: #00D2EE;
+    --cyan-teal: #06D6A0;
+    --cyan-sky: #38BDF8;
+    --cyan-deep: #0284C7;
 
-    --dark-ink: #18110E;
-    --dark-ink-soft: #2E221B;
-    --sepia-brown: #75502F;
-    --sepia-gold: #B8860B;
+    --text-white: #FFFFFF;
+    --text-cyan-light: #E0F7FA;
+    --text-cyan-muted: #7DD3FC;
+    --text-slate-muted: #94A3B8;
   }
 
   html {
     scroll-behavior: smooth;
-    color-scheme: light;
+    color-scheme: dark;
   }
 
   body {
-    background-color: #EDE3CD;
-    color: var(--dark-ink);
+    background-color: #050B14;
+    color: #F0F9FF;
     font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     overflow-x: hidden;
     margin: 0;
@@ -41,74 +37,76 @@
   }
 
   h1, h2, h3, .font-editorial-title {
-    font-family: var(--font-playfair), var(--font-cormorant), Georgia, serif;
+    font-family: var(--font-montserrat), var(--font-inter), sans-serif;
   }
 
-  .font-cormorant {
-    font-family: var(--font-cormorant), Georgia, serif;
+  .font-mono-tech, .font-sans-meta {
+    font-family: var(--font-space-grotesk), var(--font-inter), monospace;
   }
 
   .font-script {
-    font-family: var(--font-caveat), cursive;
-  }
-
-  .font-sans-meta {
-    font-family: var(--font-inter), sans-serif;
+    font-family: var(--font-space-grotesk), sans-serif;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
   }
 }
 
 /* ========================================================================= */
-/* VINTAGE SCORCHED & EMBER BACKGROUND */
+/* CINEMATIC MEDIA BACKGROUND & GEOMETRIC POLYGON LAYERS */
 /* ========================================================================= */
 
-.bg-vintage-scorched {
+.bg-cinematic-navy {
   background: 
-    radial-gradient(ellipse 70% 50% at 20% 10%, rgba(90, 28, 22, 0.18), transparent 65%),
-    radial-gradient(ellipse 60% 45% at 85% 30%, rgba(245, 158, 11, 0.14), transparent 60%),
-    radial-gradient(ellipse 75% 55% at 50% 70%, rgba(45, 15, 11, 0.16), transparent 70%),
-    linear-gradient(180deg, #F5EFE0 0%, #EFE5CE 30%, #E8DAC0 70%, #DFCBA7 100%);
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0, 240, 255, 0.12), transparent 70%),
+    radial-gradient(ellipse 60% 45% at 90% 40%, rgba(6, 214, 160, 0.08), transparent 60%),
+    radial-gradient(ellipse 70% 60% at 10% 80%, rgba(2, 132, 199, 0.14), transparent 70%),
+    linear-gradient(180deg, #050B14 0%, #071224 40%, #06101E 75%, #040810 100%);
   background-attachment: fixed;
 }
 
-.bg-vintage-grain {
+/* Diagonal Cyan Grid & Dot Matrix */
+.bg-cinematic-grid {
   background-image: 
-    radial-gradient(rgba(24, 17, 14, 0.05) 1px, transparent 0),
-    radial-gradient(rgba(90, 28, 22, 0.03) 1px, transparent 0);
-  background-size: 18px 18px, 12px 12px;
-  background-position: 0 0, 6px 6px;
+    radial-gradient(rgba(0, 240, 255, 0.12) 1px, transparent 0),
+    linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+  background-size: 24px 24px, 48px 48px, 48px 48px;
+  background-position: 0 0, 0 0, 0 0;
 }
 
 /* ========================================================================= */
-/* BURNED VINTAGE PAPER CARDS */
+/* MEDIA TEAM CINEMATIC ID CARD (HIGH CONTRAST DARK NAVY + CYAN GLOW) */
 /* ========================================================================= */
 
-.burned-paper-card {
+.media-glass-card {
   position: relative;
   background: 
-    radial-gradient(ellipse at 50% 40%, #FAF5EA 0%, #F4EBDA 55%, #EADBBE 85%, #CFB78F 100%);
-  border: 2px solid #5A1E18;
+    radial-gradient(ellipse at 50% 0%, rgba(15, 34, 61, 0.95) 0%, rgba(10, 22, 40, 0.95) 60%, rgba(6, 15, 30, 0.98) 100%);
+  border: 1px solid rgba(0, 240, 255, 0.28);
   box-shadow: 
-    0 22px 50px -12px rgba(18, 7, 6, 0.35),
-    0 4px 12px rgba(90, 28, 22, 0.15),
-    inset 0 0 45px rgba(45, 15, 11, 0.32),
-    inset 0 0 15px rgba(24, 17, 14, 0.25);
-  border-radius: 16px;
+    0 24px 60px -15px rgba(0, 0, 0, 0.8),
+    0 0 35px -5px rgba(0, 240, 255, 0.12),
+    inset 0 1px 1px rgba(255, 255, 255, 0.15),
+    inset 0 0 30px rgba(0, 240, 255, 0.04);
+  border-radius: 18px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
-/* Scorched & Charred Perimeter Layer */
-.burned-paper-card::before {
+/* Corner Viewfinder Camera Brackets on Cards */
+.media-glass-card::before {
   content: '';
   position: absolute;
-  inset: -2px;
+  inset: -1px;
   border-radius: 18px;
-  padding: 2px;
+  padding: 1px;
   background: linear-gradient(
     135deg,
-    #2D0F0B 0%,
-    #5A1C16 25%,
-    #B84018 50%,
-    #3A100E 75%,
-    #1A0705 100%
+    rgba(0, 240, 255, 0.7) 0%,
+    rgba(0, 210, 238, 0.2) 30%,
+    transparent 50%,
+    rgba(6, 214, 160, 0.3) 80%,
+    rgba(0, 240, 255, 0.6) 100%
   );
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -117,123 +115,128 @@
   pointer-events: none;
 }
 
-/* Inner Singed Deckle Dashed Line */
-.burned-paper-card::after {
-  content: '';
-  position: absolute;
-  inset: 6px;
-  border: 1px dashed rgba(60, 18, 14, 0.4);
-  border-radius: 12px;
-  pointer-events: none;
-}
-
-/* Ember Glowing Wax Stamp */
-.ember-wax-badge {
-  background: radial-gradient(circle at 30% 30%, #C0392B, #641B18 65%, #2D0F0B 100%);
-  border: 1px solid #E74C3C;
-  box-shadow: 
-    0 4px 14px rgba(45, 15, 11, 0.5),
-    0 0 15px rgba(255, 107, 43, 0.25),
-    inset 0 1px 2px rgba(255, 255, 255, 0.4);
-}
-
 /* ========================================================================= */
-/* VINTAGE PHOTOGRAPH TREATMENT WITH BURNT EDGES */
+/* CAMERA VIEWFINDER & PHOTO FRAME */
 /* ========================================================================= */
 
-.burned-photo-mount {
+.media-photo-viewfinder {
   position: relative;
-  background: #FAF4E6;
-  padding: 12px;
+  background: #06101E;
+  padding: 8px;
   box-shadow: 
-    0 22px 50px -10px rgba(18, 7, 6, 0.4),
-    inset 0 0 25px rgba(45, 15, 11, 0.28);
-  border: 2px solid #431713;
-  border-radius: 4px;
+    0 20px 45px -10px rgba(0, 0, 0, 0.9),
+    0 0 25px rgba(0, 240, 255, 0.15),
+    inset 0 0 20px rgba(0, 240, 255, 0.08);
+  border: 1px solid rgba(0, 240, 255, 0.35);
+  border-radius: 12px;
 }
 
-/* Burnt Metal / Leather Photo Corners */
-.photo-corner-tl {
+/* Electric Cyan Viewfinder Corner Mounts */
+.viewfinder-corner-tl {
   position: absolute;
   top: 4px;
   left: 4px;
-  width: 20px;
-  height: 20px;
-  border-top: 3px solid #641B18;
-  border-left: 3px solid #641B18;
-  box-shadow: -1px -1px 3px rgba(255, 107, 43, 0.3);
+  width: 18px;
+  height: 18px;
+  border-top: 2.5px solid #00F0FF;
+  border-left: 2.5px solid #00F0FF;
+  box-shadow: -1px -1px 6px rgba(0, 240, 255, 0.8);
   z-index: 10;
 }
 
-.photo-corner-tr {
+.viewfinder-corner-tr {
   position: absolute;
   top: 4px;
   right: 4px;
-  width: 20px;
-  height: 20px;
-  border-top: 3px solid #641B18;
-  border-right: 3px solid #641B18;
-  box-shadow: 1px -1px 3px rgba(255, 107, 43, 0.3);
+  width: 18px;
+  height: 18px;
+  border-top: 2.5px solid #00F0FF;
+  border-right: 2.5px solid #00F0FF;
+  box-shadow: 1px -1px 6px rgba(0, 240, 255, 0.8);
   z-index: 10;
 }
 
-.photo-corner-bl {
+.viewfinder-corner-bl {
   position: absolute;
   bottom: 4px;
   left: 4px;
-  width: 20px;
-  height: 20px;
-  border-bottom: 3px solid #641B18;
-  border-left: 3px solid #641B18;
-  box-shadow: -1px 1px 3px rgba(255, 107, 43, 0.3);
+  width: 18px;
+  height: 18px;
+  border-bottom: 2.5px solid #00F0FF;
+  border-left: 2.5px solid #00F0FF;
+  box-shadow: -1px 1px 6px rgba(0, 240, 255, 0.8);
   z-index: 10;
 }
 
-.photo-corner-br {
+.viewfinder-corner-br {
   position: absolute;
   bottom: 4px;
   right: 4px;
-  width: 20px;
-  height: 20px;
-  border-bottom: 3px solid #641B18;
-  border-right: 3px solid #641B18;
-  box-shadow: 1px 1px 3px rgba(255, 107, 43, 0.3);
+  width: 18px;
+  height: 18px;
+  border-bottom: 2.5px solid #00F0FF;
+  border-right: 2.5px solid #00F0FF;
+  box-shadow: 1px 1px 6px rgba(0, 240, 255, 0.8);
   z-index: 10;
 }
 
-/* Tintype Photo Filter */
-.vintage-tintype-photo {
-  filter: contrast(114%) brightness(96%) sepia(30%) saturate(90%);
-  transition: filter 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s ease;
+/* Cinematic High-Contrast Portrait Photo Filter */
+.cinematic-media-photo {
+  filter: contrast(106%) brightness(102%) saturate(104%);
+  transition: filter 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s ease;
 }
 
-.burned-photo-mount:hover .vintage-tintype-photo {
-  filter: contrast(108%) brightness(99%) sepia(14%) saturate(98%);
+.media-photo-viewfinder:hover .cinematic-media-photo {
+  filter: contrast(110%) brightness(105%) saturate(108%);
   transform: scale(1.02);
 }
 
-.burned-photo-mount:hover {
+.media-photo-viewfinder:hover {
   box-shadow: 
-    0 25px 60px -10px rgba(18, 7, 6, 0.5),
-    0 0 25px rgba(255, 107, 43, 0.2),
-    inset 0 0 30px rgba(45, 15, 11, 0.35);
+    0 25px 50px -10px rgba(0, 0, 0, 0.95),
+    0 0 35px rgba(0, 240, 255, 0.3),
+    inset 0 0 25px rgba(0, 240, 255, 0.15);
+  border-color: #00F0FF;
 }
 
-/* Custom Scrollbar for Vintage Palette */
+/* ========================================================================= */
+/* GLOWING BADGES, REC LIGHTS & FILM STRIPS */
+/* ========================================================================= */
+
+.cyan-neon-badge {
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.2) 0%, rgba(6, 214, 160, 0.15) 100%);
+  border: 1px solid rgba(0, 240, 255, 0.6);
+  box-shadow: 
+    0 0 16px rgba(0, 240, 255, 0.35),
+    inset 0 1px 2px rgba(255, 255, 255, 0.3);
+}
+
+.rec-pulse-dot {
+  background-color: #EF4444;
+  box-shadow: 0 0 10px #EF4444, 0 0 20px #EF4444;
+  animation: pulseRec 1.8s infinite;
+}
+
+@keyframes pulseRec {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+/* Custom Scrollbar for Dark Teal/Cyan Theme */
 ::-webkit-scrollbar {
   width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #E8DAC0;
+  background: #050B14;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #A68B68;
+  background: #0E2E44;
   border-radius: 4px;
-  border: 2px solid #E8DAC0;
+  border: 2px solid #050B14;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #641B18;
+  background: #00D2EE;
 }

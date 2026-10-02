@@ -76,50 +76,106 @@ export default function FluidBackground() {
         y,
         vx: (Math.random() - 0.5) * 2 * intensity,
         vy: (Math.random() - 0.5) * 2 * intensity,
-        radius: 30 * intensity,
-        maxRadius: (90 + Math.random() * 50) * intensity,
-        alpha: 0.85,
+        radius: 25 * intensity,
+        maxRadius: (80 + Math.random() * 40) * intensity,
+        alpha: 0.9,
         life: 0,
-        maxLife: 50 + Math.random() * 30
+        maxLife: 45 + Math.random() * 25
       });
     };
 
     // Helper to draw the large background text
-    const drawStudentCouncilText = (targetCtx: CanvasRenderingContext2D, isFilled: boolean) => {
+    const drawMediaTeamText = (targetCtx: CanvasRenderingContext2D, isFilled: boolean) => {
       targetCtx.save();
       targetCtx.textAlign = "center";
       targetCtx.textBaseline = "middle";
 
       // Calculate responsive font sizes
-      const fontSize1 = Math.min(width * 0.15, 140);
-      const fontSize2 = Math.min(width * 0.17, 160);
+      const fontSize1 = Math.min(width * 0.13, 120);
+      const fontSize2 = Math.min(width * 0.15, 140);
       const centerX = width / 2;
-      const centerY1 = height * 0.38;
-      const centerY2 = height * 0.58;
+      const centerY1 = height * 0.36;
+      const centerY2 = height * 0.56;
 
-      targetCtx.font = `900 ${fontSize1}px "Playfair Display", "Cormorant Garamond", Georgia, serif`;
+      targetCtx.font = `900 ${fontSize1}px "Montserrat", "Inter", sans-serif`;
       
       if (!isFilled) {
-        // Empty / Outlined Hollow Text
-        targetCtx.strokeStyle = "rgba(100, 27, 24, 0.14)";
+        // Empty / Outlined Hollow Cyan Text
+        targetCtx.strokeStyle = "rgba(0, 240, 255, 0.08)";
         targetCtx.lineWidth = 1.5;
-        targetCtx.strokeText("STUDENT", centerX, centerY1);
+        targetCtx.strokeText("MEDIA TEAM", centerX, centerY1);
 
-        targetCtx.font = `900 ${fontSize2}px "Playfair Display", "Cormorant Garamond", Georgia, serif`;
-        targetCtx.strokeText("COUNCIL", centerX, centerY2);
+        targetCtx.font = `900 ${fontSize2}px "Montserrat", "Inter", sans-serif`;
+        targetCtx.strokeStyle = "rgba(6, 214, 160, 0.06)";
+        targetCtx.strokeText("STUDENT COUNCIL", centerX, centerY2);
       } else {
-        // Solid Filled Text (will be masked by fluid)
-        const textGrad = targetCtx.createLinearGradient(0, centerY1 - 100, 0, centerY2 + 100);
-        textGrad.addColorStop(0, "#7A221E");
-        textGrad.addColorStop(0.5, "#641B18");
-        textGrad.addColorStop(1, "#3A100E");
+        // Solid Filled Radiant Cyan Liquid Text (masked by fluid)
+        const textGrad = targetCtx.createLinearGradient(0, centerY1 - 80, 0, centerY2 + 80);
+        textGrad.addColorStop(0, "#00F0FF");
+        textGrad.addColorStop(0.5, "#00B4D8");
+        textGrad.addColorStop(1, "#06D6A0");
         targetCtx.fillStyle = textGrad;
 
-        targetCtx.fillText("STUDENT", centerX, centerY1);
+        targetCtx.shadowColor = "rgba(0, 240, 255, 0.8)";
+        targetCtx.shadowBlur = 20;
 
-        targetCtx.font = `900 ${fontSize2}px "Playfair Display", "Cormorant Garamond", Georgia, serif`;
-        targetCtx.fillText("COUNCIL", centerX, centerY2);
+        targetCtx.fillText("MEDIA TEAM", centerX, centerY1);
+
+        targetCtx.font = `900 ${fontSize2}px "Montserrat", "Inter", sans-serif`;
+        targetCtx.fillText("STUDENT COUNCIL", centerX, centerY2);
       }
+
+      targetCtx.restore();
+    };
+
+    // Draw subtle cinematic geometric camera & film accents
+    const drawCinematicGeometry = (targetCtx: CanvasRenderingContext2D) => {
+      targetCtx.save();
+
+      // Subtle diagonal polygon mesh lines
+      targetCtx.strokeStyle = "rgba(0, 240, 255, 0.025)";
+      targetCtx.lineWidth = 1;
+      const step = 140;
+      for (let x = -height; x < width + height; x += step) {
+        targetCtx.beginPath();
+        targetCtx.moveTo(x, 0);
+        targetCtx.lineTo(x + height, height);
+        targetCtx.stroke();
+      }
+
+      // Subtle Aperture Ring in Background
+      const ringX = width * 0.85;
+      const ringY = height * 0.25;
+      targetCtx.strokeStyle = "rgba(0, 240, 255, 0.04)";
+      targetCtx.lineWidth = 1;
+      targetCtx.beginPath();
+      targetCtx.arc(ringX, ringY, 180, 0, Math.PI * 2);
+      targetCtx.stroke();
+      targetCtx.beginPath();
+      targetCtx.arc(ringX, ringY, 120, 0, Math.PI * 2);
+      targetCtx.stroke();
+
+      // Viewfinder Crosshairs at 4 screen corners
+      const chOffset = 40;
+      const chLen = 14;
+      targetCtx.strokeStyle = "rgba(0, 240, 255, 0.09)";
+      targetCtx.lineWidth = 1.5;
+
+      const corners = [
+        [chOffset, chOffset],
+        [width - chOffset, chOffset],
+        [chOffset, height - chOffset],
+        [width - chOffset, height - chOffset]
+      ];
+
+      corners.forEach(([cx, cy]) => {
+        targetCtx.beginPath();
+        targetCtx.moveTo(cx - chLen, cy);
+        targetCtx.lineTo(cx + chLen, cy);
+        targetCtx.moveTo(cx, cy - chLen);
+        targetCtx.lineTo(cx, cy + chLen);
+        targetCtx.stroke();
+      });
 
       targetCtx.restore();
     };
@@ -139,7 +195,7 @@ export default function FluidBackground() {
       mouse.y += mouse.vy * 0.08;
 
       // Spawn fluid drops when moving
-      if (mouse.speed > 1.5) {
+      if (mouse.speed > 1.2) {
         createFluidDrop(mouse.x, mouse.y, Math.min(mouse.speed / 10, 2.2));
       }
 
@@ -153,18 +209,23 @@ export default function FluidBackground() {
       ctx.clearRect(0, 0, width, height);
 
       // =========================================================================
-      // 1. Draw BASE HOLLOW / EMPTY "STUDENT COUNCIL" OUTLINE TEXT
+      // 1. Draw Subtle Cinematic Background Geometry
       // =========================================================================
-      drawStudentCouncilText(ctx, false);
+      drawCinematicGeometry(ctx);
 
       // =========================================================================
-      // 2. Render FLUID MASK on offscreen canvas
+      // 2. Draw BASE HOLLOW / OUTLINE TEXT
+      // =========================================================================
+      drawMediaTeamText(ctx, false);
+
+      // =========================================================================
+      // 3. Render FLUID MASK on offscreen canvas
       // =========================================================================
       if (fluidCtx) {
         fluidCtx.clearRect(0, 0, width, height);
 
         // Draw interactive cursor fluid pool / wave
-        const fluidRadius = 140 + Math.sin(tick * 0.06) * 15;
+        const fluidRadius = 150 + Math.sin(tick * 0.06) * 15;
         const mainGrad = fluidCtx.createRadialGradient(
           mouse.x, mouse.y, 10,
           mouse.x, mouse.y, fluidRadius
@@ -209,28 +270,28 @@ export default function FluidBackground() {
 
         // Clip the filled text to fluid mask
         fluidCtx.globalCompositeOperation = "source-in";
-        drawStudentCouncilText(fluidCtx, true);
+        drawMediaTeamText(fluidCtx, true);
 
         // Reset composite operation
         fluidCtx.globalCompositeOperation = "source-over";
 
         // =========================================================================
-        // 3. Draw Fluid-Filled Text onto Main Canvas
+        // 4. Draw Fluid-Filled Text onto Main Canvas
         // =========================================================================
         ctx.drawImage(fluidCanvas, 0, 0);
       }
 
       // =========================================================================
-      // 4. Draw Ambient Fluid Liquid Glow & Ripples around Cursor
+      // 5. Ambient Cyan Lens Glow & Wave Rings around Cursor
       // =========================================================================
-      const rippleRadius = 160 + Math.sin(tick * 0.05) * 20;
+      const rippleRadius = 170 + Math.sin(tick * 0.05) * 20;
       const ambientGrad = ctx.createRadialGradient(
         mouse.x, mouse.y, 0,
         mouse.x, mouse.y, rippleRadius
       );
-      ambientGrad.addColorStop(0, "rgba(100, 27, 24, 0.12)");
-      ambientGrad.addColorStop(0.4, "rgba(184, 134, 11, 0.08)");
-      ambientGrad.addColorStop(0.8, "rgba(124, 88, 53, 0.03)");
+      ambientGrad.addColorStop(0, "rgba(0, 240, 255, 0.12)");
+      ambientGrad.addColorStop(0.4, "rgba(0, 180, 216, 0.06)");
+      ambientGrad.addColorStop(0.8, "rgba(6, 214, 160, 0.02)");
       ambientGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
 
       ctx.fillStyle = ambientGrad;
@@ -238,11 +299,11 @@ export default function FluidBackground() {
       ctx.arc(mouse.x, mouse.y, rippleRadius, 0, Math.PI * 2);
       ctx.fill();
 
-      // Fluid wave ring
-      const waveRadius = ((tick * 1.5) % 180) + 40;
-      const waveAlpha = Math.max(0, (1 - waveRadius / 220) * 0.15);
-      ctx.strokeStyle = `rgba(184, 134, 11, ${waveAlpha})`;
-      ctx.lineWidth = 1.5;
+      // Cyan wave ring
+      const waveRadius = ((tick * 1.5) % 190) + 30;
+      const waveAlpha = Math.max(0, (1 - waveRadius / 220) * 0.16);
+      ctx.strokeStyle = `rgba(0, 240, 255, ${waveAlpha})`;
+      ctx.lineWidth = 1.2;
       ctx.beginPath();
       ctx.arc(mouse.x, mouse.y, waveRadius, 0, Math.PI * 2);
       ctx.stroke();
@@ -261,7 +322,7 @@ export default function FluidBackground() {
   }, []);
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none">
+    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none bg-cinematic-navy bg-cinematic-grid">
       <canvas ref={canvasRef} className="w-full h-full block" />
     </div>
   );

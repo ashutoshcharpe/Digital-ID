@@ -1,20 +1,11 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Playfair_Display, Inter, Caveat } from "next/font/google";
+import { Montserrat, Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 
-const cormorant = Cormorant_Garamond({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  style: ["normal", "italic"],
-  variable: "--font-cormorant",
-  display: "swap"
-});
-
-const playfair = Playfair_Display({
+const montserrat = Montserrat({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800", "900"],
-  style: ["normal", "italic"],
-  variable: "--font-playfair",
+  variable: "--font-montserrat",
   display: "swap"
 });
 
@@ -25,19 +16,19 @@ const inter = Inter({
   display: "swap"
 });
 
-const caveat = Caveat({
+const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
-  weight: ["400", "600", "700"],
-  variable: "--font-caveat",
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-space-grotesk",
   display: "swap"
 });
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://council.aissmsioit.org"),
-  title: "Ashutosh Charpe — Joint Media Secretary | Student Council AISSMS IOIT",
-  description: "Official Digital Extension of the Student Council ID Card, AISSMS Institute of Information Technology.",
-  keywords: ["Student Council", "AISSMS IOIT", "Ashutosh Charpe", "Digital Council ID", "Vintage Editorial"],
-  authors: [{ name: "Student Council AISSMS IOIT" }],
+  title: "Ashutosh Charpe — Joint Media Secretary | Student Council Media Team 2026",
+  description: "Official Digital ID — AISSMS IOIT Student Council Media Team 2026. Photography, Cinematography, Media & Visual Communications.",
+  keywords: ["Student Council", "Media Team", "AISSMS IOIT", "Ashutosh Charpe", "Digital Council ID", "Photography", "Cinematography"],
+  authors: [{ name: "AISSMS IOIT Student Council — Media Team" }],
   icons: {
     icon: [
       { url: "/assets/council/student_council_logo.png" },
@@ -46,8 +37,8 @@ export const metadata: Metadata = {
     apple: "/assets/council/student_council_logo.png"
   },
   openGraph: {
-    title: "Ashutosh Charpe — Joint Media Secretary | Student Council",
-    description: "Official Digital Extension of the Student Council ID Card, AISSMS Institute of Information Technology.",
+    title: "Ashutosh Charpe — Joint Media Secretary | Student Council Media Team 2026",
+    description: "Official Digital ID — AISSMS IOIT Student Council Media Team 2026.",
     type: "website"
   }
 };
@@ -58,9 +49,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="scroll-smooth">
+    <html lang="en" className="scroll-smooth dark">
       <body
-        className={`${cormorant.variable} ${playfair.variable} ${inter.variable} ${caveat.variable} antialiased selection:bg-[#641B18] selection:text-[#F6EBD5] bg-[#F5EFE6] text-[#1C1613] min-h-screen relative overflow-x-hidden`}
+        className={`${montserrat.variable} ${inter.variable} ${spaceGrotesk.variable} antialiased selection:bg-[#00F0FF] selection:text-[#040810] bg-[#050B14] text-[#F0F9FF] min-h-screen relative overflow-x-hidden`}
       >
         {children}
       </body>
