@@ -23,9 +23,261 @@ document.addEventListener("DOMContentLoaded", () => {
   initLiveTimecode();
   initOrchestratedLoadSequence();
   init3DCardParallax();
+  // Initialize listeners
   initClapperboard();
-  initShutterFlashTrigger();
+  initPhotoAndCameraClick();
 });
+
+/**
+ * ------------------------------------------------------------------------------
+ * 🔊 WEB AUDIO API SOUND GENERATORS (No external files needed)
+ * ------------------------------------------------------------------------------
+ */
+let audioCtxInstance = null;
+function getAudioContext() {
+  if (!audioCtxInstance) {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (AudioCtx) {
+      audioCtxInstance = new AudioCtx();
+    }
+  }
+  if (audioCtxInstance && audioCtxInstance.state === "suspended") {
+    audioCtxInstance.resume();
+  }
+  return audioCtxInstance;
+}
+
+/**
+ * Authentic Wooden Film Clapperboard Snap Sound
+ */
+function playClapperSound() {
+  try {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+
+    // 1. Resonant wooden body thud
+    const osc = ctx.createOscillator();
+    const oscGain = ctx.createGain();
+    osc.type = "triangle";
+    osc.frequency.setValueAtTime(340, now);
+    osc.frequency.exponentialRampToValueAtTime(70, now + 0.07);
+
+    oscGain.gain.setValueAtTime(0.6, now);
+    oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
+
+    osc.connect(oscGain);
+    oscGain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.07);
+
+    // 2. High-frequency snappy wooden crack / slap
+    const bufferSize = Math.floor(ctx.sampleRate * 0.05);
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * 0.007));
+    }
+
+    const noise = ctx.createBufferSource();
+    noise.buffer = buffer;
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = "bandpass";
+    filter.frequency.setValueAtTime(2200, now);
+    filter.Q.setValueAtTime(2.0, now);
+
+    const noiseGain = ctx.createGain();
+    noiseGain.gain.setValueAtTime(0.85, now);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+
+    noise.connect(filter);
+    filter.connect(noiseGain);
+    noiseGain.connect(ctx.destination);
+    noise.start(now);
+  } catch (e) {
+    // Audio context safe fallback
+  }
+}
+
+/**
+ * Authentic DSLR Camera Focus & Shutter Click Sound (Dual curtain ka-chick)
+ */
+function playCameraShutterSound() {
+  try {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+
+    // A. Focus Confirmation Electronic Chirp / Beep (Very brief)
+    const focusOsc = ctx.createOscillator();
+    const focusGain = ctx.createGain();
+    focusOsc.type = "sine";
+    focusOsc.frequency.setValueAtTime(1450, now);
+    focusGain.gain.setValueAtTime(0.18, now);
+    focusGain.gain.exponentialRampToValueAtTime(0.001, now + 0.035);
+    focusOsc.connect(focusGain);
+    focusGain.connect(ctx.destination);
+    focusOsc.start(now);
+    focusOsc.stop(now + 0.035);
+
+    // B. Mirror Lift & Shutter Opening Click (T + 40ms)
+    const tOpen = now + 0.04;
+    const osc1 = ctx.createOscillator();
+    const gain1 = ctx.createGain();
+    osc1.type = "triangle";
+    osc1.frequency.setValueAtTime(650, tOpen);
+    osc1.frequency.exponentialRampToValueAtTime(180, tOpen + 0.03);
+    gain1.gain.setValueAtTime(0.5, tOpen);
+    gain1.gain.exponentialRampToValueAtTime(0.001, tOpen + 0.03);
+    osc1.connect(gain1);
+    gain1.connect(ctx.destination);
+    osc1.start(tOpen);
+    osc1.stop(tOpen + 0.03);
+
+    // C. Metallic Shutter Curtain Noise Burst 1
+    const bufferSize = Math.floor(ctx.sampleRate * 0.06);
+    const buffer1 = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data1 = buffer1.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data1[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * 0.01));
+    }
+    const noise1 = ctx.createBufferSource();
+    noise1.buffer = buffer1;
+    const filter1 = ctx.createBiquadFilter();
+    filter1.type = "highpass";
+    filter1.frequency.setValueAtTime(2600, tOpen);
+    const noiseGain1 = ctx.createGain();
+    noiseGain1.gain.setValueAtTime(0.7, tOpen);
+    noiseGain1.gain.exponentialRampToValueAtTime(0.001, tOpen + 0.04);
+    noise1.connect(filter1);
+    filter1.connect(noiseGain1);
+    noiseGain1.connect(ctx.destination);
+    noise1.start(tOpen);
+
+    // D. Second Shutter Curtain Return Click (T + 110ms)
+    const tClose = now + 0.11;
+    const osc2 = ctx.createOscillator();
+    const gain2 = ctx.createGain();
+    osc2.type = "triangle";
+    osc2.frequency.setValueAtTime(500, tClose);
+    osc2.frequency.exponentialRampToValueAtTime(140, tClose + 0.04);
+    gain2.gain.setValueAtTime(0.55, tClose);
+    gain2.gain.exponentialRampToValueAtTime(0.001, tClose + 0.04);
+    osc2.connect(gain2);
+    gain2.connect(ctx.destination);
+    osc2.start(tClose);
+    osc2.stop(tClose + 0.04);
+
+    const noise2 = ctx.createBufferSource();
+    noise2.buffer = buffer1;
+    const noiseGain2 = ctx.createGain();
+    noiseGain2.gain.setValueAtTime(0.75, tClose);
+    noiseGain2.gain.exponentialRampToValueAtTime(0.001, tClose + 0.05);
+    noise2.connect(filter1);
+    filter1.connect(noiseGain2);
+    noiseGain2.connect(ctx.destination);
+    noise2.start(tClose);
+  } catch (e) {
+    // Fallback
+  }
+}
+
+/**
+ * 6. Interactive Clapperboard
+ * Clicking claps again, plays wooden clap sound, and increments the take number.
+ */
+function initClapperboard() {
+  const clapperboard = document.getElementById("clapperboard");
+  const clapperStick = document.getElementById("clapperStick");
+  const takeCounter = document.getElementById("takeCounter");
+  if (!clapperboard || !clapperStick || !takeCounter) return;
+
+  let currentTake = 1;
+
+  function clap() {
+    currentTake += 1;
+    takeCounter.textContent = String(currentTake).padStart(2, "0");
+
+    // Play synthesized wooden clapperboard snap sound
+    playClapperSound();
+
+    // Remove is-open and retrigger full wide open clap animation
+    clapperStick.classList.remove("is-open");
+    clapperStick.classList.remove("is-clapping");
+    void clapperStick.offsetWidth; // Force CSS reflow
+    clapperStick.classList.add("is-clapping");
+  }
+
+  // Open fully while pressing / holding click
+  clapperboard.addEventListener("pointerdown", () => {
+    clapperStick.classList.remove("is-clapping");
+    clapperStick.classList.add("is-open");
+  });
+
+  clapperboard.addEventListener("pointerup", () => {
+    clap();
+  });
+
+  clapperboard.addEventListener("pointerleave", () => {
+    if (clapperStick.classList.contains("is-open")) {
+      clapperStick.classList.remove("is-open");
+      clapperStick.classList.add("is-shut");
+    }
+  });
+
+  clapperboard.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      clap();
+    }
+  });
+}
+
+/**
+ * 7. Photo Viewfinder & DSLR Camera Click Triggers
+ */
+function initPhotoAndCameraClick() {
+  const viewfinder = document.getElementById("viewfinder");
+  const portraitPhoto = document.getElementById("portraitPhoto");
+  const afStatus = document.getElementById("afStatus");
+  const cameraBtn = document.getElementById("cameraTrigger");
+
+  function triggerCameraClick(elem) {
+    // Play dual-curtain DSLR camera shutter & focus sound
+    playCameraShutterSound();
+
+    // Visual micro focus pulse
+    if (afStatus) {
+      afStatus.style.color = "#10b981";
+      afStatus.textContent = "AF LOCK • SNAP";
+      setTimeout(() => {
+        afStatus.textContent = "AF-S LOCK";
+      }, 600);
+    }
+
+    if (elem) {
+      elem.style.transform = "scale(0.985)";
+      setTimeout(() => {
+        elem.style.transform = "";
+      }, 120);
+    }
+  }
+
+  // Click on Viewfinder / Portrait Photo
+  if (viewfinder) {
+    viewfinder.addEventListener("click", () => {
+      triggerCameraClick(portraitPhoto);
+    });
+  }
+
+  // Click on Camera trigger button at bottom
+  if (cameraBtn) {
+    cameraBtn.addEventListener("click", () => {
+      triggerCameraClick(cameraBtn);
+    });
+  }
+}
 
 /**
  * 1. Initialize WhatsApp Button Status

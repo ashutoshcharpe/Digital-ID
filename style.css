@@ -280,6 +280,14 @@ a:focus-visible, button:focus-visible, [tabindex="0"]:focus-visible {
   background: var(--card-bg-subtle);
   overflow: hidden;
   box-shadow: inset 0 0 16px rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  user-select: none;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.viewfinder-frame:hover {
+  border-color: var(--accent-slate);
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.1), var(--shadow-sm);
 }
 
 /* 4 Corner Brackets */
