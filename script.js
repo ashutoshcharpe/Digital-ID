@@ -15,7 +15,7 @@
  * Leave as "" (empty string) to display "Number coming soon" in disabled state.
  * ------------------------------------------------------------------------------
  */
-const WA_NUMBER = ""; // <-- EDIT YOUR WHATSAPP NUMBER HERE (e.g. "917620443842")
+const WA_NUMBER = "917620443842"; // Configured WhatsApp Number
 
 document.addEventListener("DOMContentLoaded", () => {
   initWhatsAppButton();
