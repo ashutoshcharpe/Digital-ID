@@ -806,47 +806,91 @@ a:focus-visible, button:focus-visible, [tabindex="0"]:focus-visible {
 
 .film-strip-track {
   display: flex;
-  gap: 1rem;
+  gap: 1.25rem;
   width: max-content;
-  animation: scrollFilmStrip 22s linear infinite;
+  animation: scrollFilmStrip 32s linear infinite;
+  padding: 0.25rem 0;
+}
+
+.film-strip-track:hover {
+  animation-play-state: paused;
 }
 
 @keyframes scrollFilmStrip {
   0% { transform: translateX(0); }
-  100% { transform: translateX(-33.333%); }
+  100% { transform: translateX(-50%); }
 }
 
-.film-frame {
+/* 35mm Film Photo Frame */
+.film-photo-frame {
   position: relative;
-  background: #1d1e20;
-  color: #ffffff;
-  border-radius: 4px;
-  padding: 0.5rem 1.25rem;
-  min-width: 95px;
-  text-align: center;
+  background: #111215;
+  border-radius: 6px;
+  padding: 8px 10px;
+  width: 170px;
+  height: 120px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  box-shadow: inset 0 0 4px rgba(0,0,0,0.5);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   flex-shrink: 0;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
 }
 
-.frame-content {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  padding: 0.2rem 0;
+.film-photo-frame:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
-/* Perforations */
-.perf-top, .perf-bottom {
-  display: block;
-  height: 3px;
-  background: radial-gradient(circle, #ffffff 40%, transparent 45%);
-  background-size: 10px 3px;
+/* 35mm Sprocket Perforations (Top & Bottom) */
+.film-perforations {
+  width: 100%;
+  height: 6px;
+  background: radial-gradient(circle, #ffffff 42%, transparent 45%);
+  background-size: 14px 6px;
   background-repeat: repeat-x;
-  opacity: 0.8;
+  opacity: 0.75;
+}
+
+.film-photo-inner {
+  position: relative;
+  width: 100%;
+  height: calc(100% - 16px);
+  border-radius: 3px;
+  overflow: hidden;
+  background: #000000;
+}
+
+/* Black & White Photo Filter */
+.film-photo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: grayscale(100%) contrast(120%) brightness(92%);
+  transition: filter 0.4s ease, transform 0.4s ease;
+}
+
+.film-photo-frame:hover .film-photo-img {
+  filter: grayscale(80%) contrast(125%) brightness(100%);
+  transform: scale(1.05);
+}
+
+.film-frame-number {
+  position: absolute;
+  bottom: 3px;
+  left: 5px;
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  font-weight: 700;
+  color: #ffffff;
+  background: rgba(0, 0, 0, 0.65);
+  padding: 1px 4px;
+  border-radius: 2px;
+  letter-spacing: 0.08em;
+  pointer-events: none;
 }
 
 /* Right: DSLR Camera Illustration Trigger */
