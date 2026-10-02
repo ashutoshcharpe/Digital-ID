@@ -241,13 +241,30 @@ function initClapperboard() {
     currentTake += 1;
     takeCounter.textContent = String(currentTake).padStart(2, "0");
 
-    // Retrigger clap animation
+    // Remove is-open and retrigger full wide open clap animation
+    clapperStick.classList.remove("is-open");
     clapperStick.classList.remove("is-clapping");
     void clapperStick.offsetWidth; // Force CSS reflow
     clapperStick.classList.add("is-clapping");
   }
 
-  clapperboard.addEventListener("click", clap);
+  // Open fully while pressing / holding click
+  clapperboard.addEventListener("pointerdown", () => {
+    clapperStick.classList.remove("is-clapping");
+    clapperStick.classList.add("is-open");
+  });
+
+  clapperboard.addEventListener("pointerup", () => {
+    clap();
+  });
+
+  clapperboard.addEventListener("pointerleave", () => {
+    if (clapperStick.classList.contains("is-open")) {
+      clapperStick.classList.remove("is-open");
+      clapperStick.classList.add("is-shut");
+    }
+  });
+
   clapperboard.addEventListener("keydown", (e) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
