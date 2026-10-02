@@ -105,8 +105,8 @@ export const MEMBERS_DATA: Record<string, CouncilMember> = {
       contact: {
         type: "whatsapp",
         label: "WhatsApp / Contact",
-        actionUrl: "https://wa.me/?text=Hello%20Ashutosh,%20reaching%20out%20via%20the%20official%20Student%20Council%20Digital%20ID.",
-        displayHandle: "Direct Channel",
+        actionUrl: "https://wa.me/917620443842?text=Hello%20Ashutosh,%20reaching%20out%20via%20the%20official%20Student%20Council%20Digital%20ID.",
+        displayHandle: "+91 76204 43842",
         note: "Official council correspondence & student initiatives"
       }
     },
