@@ -18,22 +18,23 @@
 const WA_NUMBER = "917620443842"; // Configured WhatsApp Number
 
 document.addEventListener("DOMContentLoaded", () => {
+  initAudioUnlock();
   initWhatsAppButton();
   initCurrentDate();
   initLiveTimecode();
   initOrchestratedLoadSequence();
   init3DCardParallax();
-  // Initialize listeners
   initClapperboard();
   initPhotoAndCameraClick();
 });
 
 /**
  * ------------------------------------------------------------------------------
- * 🔊 WEB AUDIO API SOUND GENERATORS (No external files needed)
+ * 🔊 WEB AUDIO API SOUND GENERATORS (No external files required)
  * ------------------------------------------------------------------------------
  */
 let audioCtxInstance = null;
+
 function getAudioContext() {
   if (!audioCtxInstance) {
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -48,6 +49,19 @@ function getAudioContext() {
 }
 
 /**
+ * Unlock audio context on the first user interaction (touch/click)
+ */
+function initAudioUnlock() {
+  const unlock = () => {
+    getAudioContext();
+    document.removeEventListener("pointerdown", unlock);
+    document.removeEventListener("click", unlock);
+  };
+  document.addEventListener("pointerdown", unlock, { once: true });
+  document.addEventListener("click", unlock, { once: true });
+}
+
+/**
  * Authentic Wooden Film Clapperboard Snap Sound
  */
 function playClapperSound() {
@@ -56,27 +70,12 @@ function playClapperSound() {
     if (!ctx) return;
     const now = ctx.currentTime;
 
-    // 1. Resonant wooden body thud
-    const osc = ctx.createOscillator();
-    const oscGain = ctx.createGain();
-    osc.type = "triangle";
-    osc.frequency.setValueAtTime(340, now);
-    osc.frequency.exponentialRampToValueAtTime(70, now + 0.07);
-
-    oscGain.gain.setValueAtTime(0.6, now);
-    oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
-
-    osc.connect(oscGain);
-    oscGain.connect(ctx.destination);
-    osc.start(now);
-    osc.stop(now + 0.07);
-
-    // 2. High-frequency snappy wooden crack / slap
-    const bufferSize = Math.floor(ctx.sampleRate * 0.05);
+    // 1. High-frequency snappy wooden crack / slap (Broadband impact)
+    const bufferSize = Math.floor(ctx.sampleRate * 0.08);
     const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
     const data = buffer.getChannelData(0);
     for (let i = 0; i < bufferSize; i++) {
-      data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * 0.007));
+      data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * 0.009));
     }
 
     const noise = ctx.createBufferSource();
@@ -84,19 +83,50 @@ function playClapperSound() {
 
     const filter = ctx.createBiquadFilter();
     filter.type = "bandpass";
-    filter.frequency.setValueAtTime(2200, now);
-    filter.Q.setValueAtTime(2.0, now);
+    filter.frequency.setValueAtTime(1750, now);
+    filter.Q.setValueAtTime(1.8, now);
 
     const noiseGain = ctx.createGain();
-    noiseGain.gain.setValueAtTime(0.85, now);
-    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+    noiseGain.gain.setValueAtTime(1.2, now);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
 
     noise.connect(filter);
     filter.connect(noiseGain);
     noiseGain.connect(ctx.destination);
     noise.start(now);
+
+    // 2. Resonant Solid Wood Body Clack (Low-mid punch)
+    const osc1 = ctx.createOscillator();
+    const oscGain1 = ctx.createGain();
+    osc1.type = "triangle";
+    osc1.frequency.setValueAtTime(460, now);
+    osc1.frequency.exponentialRampToValueAtTime(95, now + 0.09);
+
+    oscGain1.gain.setValueAtTime(1.0, now);
+    oscGain1.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+
+    osc1.connect(oscGain1);
+    oscGain1.connect(ctx.destination);
+    osc1.start(now);
+    osc1.stop(now + 0.09);
+
+    // 3. Secondary Rebound Wooden Snap (25ms later)
+    const osc2 = ctx.createOscillator();
+    const oscGain2 = ctx.createGain();
+    osc2.type = "sine";
+    osc2.frequency.setValueAtTime(680, now + 0.025);
+    osc2.frequency.exponentialRampToValueAtTime(130, now + 0.085);
+
+    oscGain2.gain.setValueAtTime(0.5, now + 0.025);
+    oscGain2.gain.exponentialRampToValueAtTime(0.001, now + 0.085);
+
+    osc2.connect(oscGain2);
+    oscGain2.connect(ctx.destination);
+    osc2.start(now + 0.025);
+    osc2.stop(now + 0.085);
+
   } catch (e) {
-    // Audio context safe fallback
+    console.warn("AudioContext playback error:", e);
   }
 }
 
@@ -109,26 +139,26 @@ function playCameraShutterSound() {
     if (!ctx) return;
     const now = ctx.currentTime;
 
-    // A. Focus Confirmation Electronic Chirp / Beep (Very brief)
+    // A. Focus Confirmation Electronic Chirp
     const focusOsc = ctx.createOscillator();
     const focusGain = ctx.createGain();
     focusOsc.type = "sine";
     focusOsc.frequency.setValueAtTime(1450, now);
-    focusGain.gain.setValueAtTime(0.18, now);
+    focusGain.gain.setValueAtTime(0.2, now);
     focusGain.gain.exponentialRampToValueAtTime(0.001, now + 0.035);
     focusOsc.connect(focusGain);
     focusGain.connect(ctx.destination);
     focusOsc.start(now);
     focusOsc.stop(now + 0.035);
 
-    // B. Mirror Lift & Shutter Opening Click (T + 40ms)
-    const tOpen = now + 0.04;
+    // B. Mirror Lift & Shutter Opening Click (T + 35ms)
+    const tOpen = now + 0.035;
     const osc1 = ctx.createOscillator();
     const gain1 = ctx.createGain();
     osc1.type = "triangle";
     osc1.frequency.setValueAtTime(650, tOpen);
     osc1.frequency.exponentialRampToValueAtTime(180, tOpen + 0.03);
-    gain1.gain.setValueAtTime(0.5, tOpen);
+    gain1.gain.setValueAtTime(0.6, tOpen);
     gain1.gain.exponentialRampToValueAtTime(0.001, tOpen + 0.03);
     osc1.connect(gain1);
     gain1.connect(ctx.destination);
@@ -148,21 +178,21 @@ function playCameraShutterSound() {
     filter1.type = "highpass";
     filter1.frequency.setValueAtTime(2600, tOpen);
     const noiseGain1 = ctx.createGain();
-    noiseGain1.gain.setValueAtTime(0.7, tOpen);
+    noiseGain1.gain.setValueAtTime(0.8, tOpen);
     noiseGain1.gain.exponentialRampToValueAtTime(0.001, tOpen + 0.04);
     noise1.connect(filter1);
     filter1.connect(noiseGain1);
     noiseGain1.connect(ctx.destination);
     noise1.start(tOpen);
 
-    // D. Second Shutter Curtain Return Click (T + 110ms)
-    const tClose = now + 0.11;
+    // D. Second Shutter Curtain Return Click (T + 105ms)
+    const tClose = now + 0.105;
     const osc2 = ctx.createOscillator();
     const gain2 = ctx.createGain();
     osc2.type = "triangle";
     osc2.frequency.setValueAtTime(500, tClose);
     osc2.frequency.exponentialRampToValueAtTime(140, tClose + 0.04);
-    gain2.gain.setValueAtTime(0.55, tClose);
+    gain2.gain.setValueAtTime(0.65, tClose);
     gain2.gain.exponentialRampToValueAtTime(0.001, tClose + 0.04);
     osc2.connect(gain2);
     gain2.connect(ctx.destination);
@@ -172,110 +202,14 @@ function playCameraShutterSound() {
     const noise2 = ctx.createBufferSource();
     noise2.buffer = buffer1;
     const noiseGain2 = ctx.createGain();
-    noiseGain2.gain.setValueAtTime(0.75, tClose);
+    noiseGain2.gain.setValueAtTime(0.85, tClose);
     noiseGain2.gain.exponentialRampToValueAtTime(0.001, tClose + 0.05);
     noise2.connect(filter1);
     filter1.connect(noiseGain2);
     noiseGain2.connect(ctx.destination);
     noise2.start(tClose);
   } catch (e) {
-    // Fallback
-  }
-}
-
-/**
- * 6. Interactive Clapperboard
- * Clicking claps again, plays wooden clap sound, and increments the take number.
- */
-function initClapperboard() {
-  const clapperboard = document.getElementById("clapperboard");
-  const clapperStick = document.getElementById("clapperStick");
-  const takeCounter = document.getElementById("takeCounter");
-  if (!clapperboard || !clapperStick || !takeCounter) return;
-
-  let currentTake = 1;
-
-  function clap() {
-    currentTake += 1;
-    takeCounter.textContent = String(currentTake).padStart(2, "0");
-
-    // Play synthesized wooden clapperboard snap sound
-    playClapperSound();
-
-    // Remove is-open and retrigger full wide open clap animation
-    clapperStick.classList.remove("is-open");
-    clapperStick.classList.remove("is-clapping");
-    void clapperStick.offsetWidth; // Force CSS reflow
-    clapperStick.classList.add("is-clapping");
-  }
-
-  // Open fully while pressing / holding click
-  clapperboard.addEventListener("pointerdown", () => {
-    clapperStick.classList.remove("is-clapping");
-    clapperStick.classList.add("is-open");
-  });
-
-  clapperboard.addEventListener("pointerup", () => {
-    clap();
-  });
-
-  clapperboard.addEventListener("pointerleave", () => {
-    if (clapperStick.classList.contains("is-open")) {
-      clapperStick.classList.remove("is-open");
-      clapperStick.classList.add("is-shut");
-    }
-  });
-
-  clapperboard.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      clap();
-    }
-  });
-}
-
-/**
- * 7. Photo Viewfinder & DSLR Camera Click Triggers
- */
-function initPhotoAndCameraClick() {
-  const viewfinder = document.getElementById("viewfinder");
-  const portraitPhoto = document.getElementById("portraitPhoto");
-  const afStatus = document.getElementById("afStatus");
-  const cameraBtn = document.getElementById("cameraTrigger");
-
-  function triggerCameraClick(elem) {
-    // Play dual-curtain DSLR camera shutter & focus sound
-    playCameraShutterSound();
-
-    // Visual micro focus pulse
-    if (afStatus) {
-      afStatus.style.color = "#10b981";
-      afStatus.textContent = "AF LOCK • SNAP";
-      setTimeout(() => {
-        afStatus.textContent = "AF-S LOCK";
-      }, 600);
-    }
-
-    if (elem) {
-      elem.style.transform = "scale(0.985)";
-      setTimeout(() => {
-        elem.style.transform = "";
-      }, 120);
-    }
-  }
-
-  // Click on Viewfinder / Portrait Photo
-  if (viewfinder) {
-    viewfinder.addEventListener("click", () => {
-      triggerCameraClick(portraitPhoto);
-    });
-  }
-
-  // Click on Camera trigger button at bottom
-  if (cameraBtn) {
-    cameraBtn.addEventListener("click", () => {
-      triggerCameraClick(cameraBtn);
-    });
+    console.warn("AudioContext shutter error:", e);
   }
 }
 
@@ -296,7 +230,7 @@ function initWhatsAppButton() {
     waBtn.target = "_blank";
     waBtn.rel = "noopener noreferrer";
     
-    // Nicely format number for display (e.g. +91 76204 43842)
+    // Format number (e.g. +91 76204 43842)
     if (cleanNumber.startsWith("91") && cleanNumber.length === 12) {
       waHandle.textContent = `+91 ${cleanNumber.slice(2, 7)} ${cleanNumber.slice(7)}`;
     } else {
@@ -354,18 +288,12 @@ function initLiveTimecode() {
 
 /**
  * 4. Orchestrated Load Sequence
- * Step 1: Photo starts blurred.
- * Step 2: Autofocus zooms in & locks (amber -> green).
- * Step 3: Photo sharpens.
- * Step 4: Shutter flash plays.
- * Step 5: Clapperboard claps shut.
  */
 function initOrchestratedLoadSequence() {
   const portraitPhoto = document.getElementById("portraitPhoto");
   const afStatus = document.getElementById("afStatus");
   const clapperStick = document.getElementById("clapperStick");
 
-  // Check for reduced motion preference
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   if (prefersReducedMotion) {
@@ -375,12 +303,12 @@ function initOrchestratedLoadSequence() {
     return;
   }
 
-  // T + 350ms: AF HUD status lock
+  // T + 400ms: AF HUD status lock
   setTimeout(() => {
     if (afStatus) afStatus.classList.add("is-locked");
   }, 400);
 
-  // T + 700ms: Photo sharpens
+  // T + 750ms: Photo sharpens
   setTimeout(() => {
     if (portraitPhoto) {
       portraitPhoto.classList.remove("blurred-init");
@@ -388,7 +316,7 @@ function initOrchestratedLoadSequence() {
     }
   }, 750);
 
-  // T + 1000ms: Clapperboard clap shut
+  // T + 1100ms: Clapperboard clap shut
   setTimeout(() => {
     if (clapperStick) {
       clapperStick.classList.add("is-shut");
@@ -413,10 +341,8 @@ function init3DCardParallax() {
   let targetRotateY = 0;
   let currentRotateX = 0;
   let currentRotateY = 0;
-  let animFrameId = null;
 
   function updateCardTransform() {
-    // Smooth lerp interpolation
     currentRotateX += (targetRotateX - currentRotateX) * 0.12;
     currentRotateY += (targetRotateY - currentRotateY) * 0.12;
 
@@ -428,19 +354,18 @@ function init3DCardParallax() {
       card.classList.add("is-floating");
     }
 
-    animFrameId = requestAnimationFrame(updateCardTransform);
+    requestAnimationFrame(updateCardTransform);
   }
 
-  // Mouse Move on Laptop / Desktop
   function onMouseMove(e) {
     if (!bounds) bounds = container.getBoundingClientRect();
     const mouseX = e.clientX - bounds.left;
     const mouseY = e.clientY - bounds.top;
 
-    const xPct = (mouseX / bounds.width) - 0.5; // -0.5 to 0.5
-    const yPct = (mouseY / bounds.height) - 0.5; // -0.5 to 0.5
+    const xPct = (mouseX / bounds.width) - 0.5;
+    const yPct = (mouseY / bounds.height) - 0.5;
 
-    targetRotateX = -yPct * 18; // Max 9 deg tilt
+    targetRotateX = -yPct * 18;
     targetRotateY = xPct * 18;
   }
 
@@ -459,12 +384,10 @@ function init3DCardParallax() {
   container.addEventListener("mousemove", onMouseMove);
   container.addEventListener("mouseleave", onMouseLeave);
 
-  // Device Orientation (Gyroscope on mobile devices)
   function onDeviceOrientation(e) {
     if (e.beta === null || e.gamma === null) return;
-    // Gamma is left/right tilt (-90 to 90), Beta is front/back tilt (-180 to 180)
     const gamma = Math.min(Math.max(e.gamma, -25), 25);
-    const beta = Math.min(Math.max(e.beta - 45, -25), 25); // center at ~45deg holding angle
+    const beta = Math.min(Math.max(e.beta - 45, -25), 25);
 
     targetRotateY = (gamma / 25) * 10;
     targetRotateX = -(beta / 25) * 10;
@@ -474,12 +397,12 @@ function init3DCardParallax() {
     window.addEventListener("deviceorientation", onDeviceOrientation, { passive: true });
   }
 
-  animFrameId = requestAnimationFrame(updateCardTransform);
+  requestAnimationFrame(updateCardTransform);
 }
 
 /**
  * 6. Interactive Clapperboard
- * Clicking claps again and increments the take number.
+ * Clicking claps the stick, plays audio snap, and increments take count.
  */
 function initClapperboard() {
   const clapperboard = document.getElementById("clapperboard");
@@ -488,55 +411,96 @@ function initClapperboard() {
   if (!clapperboard || !clapperStick || !takeCounter) return;
 
   let currentTake = 1;
+  let isPointerDown = false;
 
-  function clap() {
+  function executeClap() {
     currentTake += 1;
     takeCounter.textContent = String(currentTake).padStart(2, "0");
 
-    // Remove is-open and retrigger full wide open clap animation
+    // Play loud authentic wooden clapper sound
+    playClapperSound();
+
+    // Trigger clap animation
     clapperStick.classList.remove("is-open");
     clapperStick.classList.remove("is-clapping");
     void clapperStick.offsetWidth; // Force CSS reflow
     clapperStick.classList.add("is-clapping");
   }
 
-  // Open fully while pressing / holding click
+  // Pointer down: swing fully open
   clapperboard.addEventListener("pointerdown", () => {
+    isPointerDown = true;
+    getAudioContext(); // Resume/unlock audio context instantly
     clapperStick.classList.remove("is-clapping");
     clapperStick.classList.add("is-open");
   });
 
+  // Pointer up: snap shut with sound & take increment
   clapperboard.addEventListener("pointerup", () => {
-    clap();
+    if (isPointerDown) {
+      isPointerDown = false;
+      executeClap();
+    }
   });
 
+  // Pointer leave cancel
   clapperboard.addEventListener("pointerleave", () => {
-    if (clapperStick.classList.contains("is-open")) {
+    if (isPointerDown) {
+      isPointerDown = false;
       clapperStick.classList.remove("is-open");
       clapperStick.classList.add("is-shut");
     }
   });
 
+  // Accessible Keyboard Enter/Space
   clapperboard.addEventListener("keydown", (e) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
-      clap();
+      executeClap();
     }
   });
 }
 
 /**
- * 7. DSLR Camera Trigger Button
+ * 7. Photo Viewfinder & DSLR Camera Click Triggers
  */
-function initShutterFlashTrigger() {
+function initPhotoAndCameraClick() {
+  const viewfinder = document.getElementById("viewfinder");
+  const portraitPhoto = document.getElementById("portraitPhoto");
+  const afStatus = document.getElementById("afStatus");
   const cameraBtn = document.getElementById("cameraTrigger");
-  if (!cameraBtn) return;
 
-  cameraBtn.addEventListener("click", () => {
-    // Micro feedback animation on camera without fullscreen flash
-    cameraBtn.style.transform = "scale(0.9)";
-    setTimeout(() => {
-      cameraBtn.style.transform = "";
-    }, 150);
-  });
+  function triggerCameraClick(elem) {
+    // Play dual-curtain DSLR camera shutter & focus sound
+    playCameraShutterSound();
+
+    // Visual micro focus pulse on HUD
+    if (afStatus) {
+      afStatus.style.color = "#10b981";
+      afStatus.textContent = "AF LOCK • SNAP";
+      setTimeout(() => {
+        afStatus.textContent = "AF-S LOCK";
+        afStatus.style.color = "";
+      }, 600);
+    }
+
+    if (elem) {
+      elem.style.transform = "scale(0.985)";
+      setTimeout(() => {
+        elem.style.transform = "";
+      }, 120);
+    }
+  }
+
+  if (viewfinder) {
+    viewfinder.addEventListener("click", () => {
+      triggerCameraClick(portraitPhoto);
+    });
+  }
+
+  if (cameraBtn) {
+    cameraBtn.addEventListener("click", () => {
+      triggerCameraClick(cameraBtn);
+    });
+  }
 }
